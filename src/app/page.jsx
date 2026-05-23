@@ -1,11 +1,17 @@
 import Image from "next/image";
+import HeroSection from "@/Components/home/HeroSection";
+import CategoriesSection from "@/Components/home/CategoriesSection";
+import ProductsSection from "@/Components/home/ProductsSection";
+import Banners from "@/Components/home/Banners";
+import Footer from "@/Components/Footer";
 export default function Home() {
   return (
     <>
-      <main>
-        <h1>Welcome to My App</h1>
-        <p>This is a simple Next.js app.</p>
-      </main>
+    <HeroSection/>
+    <CategoriesSection/>
+    <ProductsSection/>
+    <Banners/>
+    <Footer />
     </>
   );
 }

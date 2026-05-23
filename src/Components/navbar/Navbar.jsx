@@ -24,7 +24,7 @@ export default function Navbar() {
       </div>
 
       {/* 2. Main Navbar */}
-      <div className="flex justify-between items-center bg-white text-black py-4 px-4 mx-auto max-w-7xl">
+      <div className="flex justify-between items-center bg-white text-black py-2 px-4 mx-auto max-w-7xl">
         {/* Left side: Logo & Mobile Menu Icon */}
         <div className="flex items-center gap-4">
           {/* Mobile Menu Icon (Right of logo, visible only on mobile) */}
@@ -38,8 +38,8 @@ export default function Navbar() {
 
           <Link href="/" className="flex items-center gap-2">
             {/* Added standard dimensions for the placeholder */}
-            <Image src="/medicineLogo.png" alt="Ecobazar Logo" width={100} height={50} className="w-auto h-12" />
-            <h1 className="font-bold text-xl hidden sm:block">Ecobazar</h1>
+            <Image src="/logo.png" alt="PrimeCare Logo" width={100} height={50} className="w-auto h-12 lg:h-16" />
+            <h1 className="font-bold text-xl hidden sm:block text-green-500">PrimeCare</h1>
           </Link>
         </div>
 
@@ -75,13 +75,13 @@ export default function Navbar() {
       </div>
 
       {/* 3. Bottom Nav Bar (Desktop Only) */}
-      <div className="hidden lg:block bg-zinc-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 justify-between items-center py-3 flex">
+      <div className="hidden lg:block bg-gray-800 text-white">
+        <div className="max-w-[1200px] mx-auto px-4 justify-between items-center py-3 flex">
 
           {/* Desktop NavLinks */}
           <NavLinks
             className="flex items-center gap-8"
-            linkClassName="hover:text-green-400 transition-colors text-sm font-medium"
+            linkClassName="hover:text-green-400 transition-colors"
           />
 
           {/* Phone */}
@@ -94,14 +94,14 @@ export default function Navbar() {
 
       {/* 4. Mobile Dropdown Menu (Opens below the main nav when clicked) */}
       {isMenuOpen && (
-        <div className="lg:hidden bg-zinc-900 text-white px-4 py-6 space-y-6">
+        <div className="lg:hidden bg-gray-800 text-white px-4 py-6 space-y-6">
 
           {/* Mobile Search Input */}
           <div className="flex items-center w-full">
             <input
               type="text"
               placeholder="Search..."
-              className="w-full border border-zinc-700 bg-zinc-800 text-white rounded-l py-2 px-4 focus:outline-none focus:border-green-500"
+              className="w-full border border-gray-700 bg-gray-800 text-white rounded-l py-2 px-4 focus:outline-none focus:border-green-500"
             />
             <button className="bg-green-500 px-4 py-2 rounded-r text-white">
               Search
