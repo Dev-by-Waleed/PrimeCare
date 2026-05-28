@@ -4,9 +4,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Handbag, Phone, Menu, X } from 'lucide-react';
 import NavLinks from './NavLinks';
-
+import { useContext } from 'react';
+import { OffCanvasContext } from '@/Context/canvas';
 export default function Navbar() {
+  const { isOpenCanvas, setOpenCanvas } = useContext(OffCanvasContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  console.log(isOpenCanvas)
 
   return (
     <nav className="w-full border-b bg-white">
@@ -60,17 +63,22 @@ export default function Navbar() {
           <Link href="/wishlist">
             <Heart className="text-gray-600 hover:text-green-500 transition-colors" size={24} />
           </Link>
-            {/* divider */}
+          {/* divider */}
           <div className="w-px h-6 bg-gray-300" />
-          <Link href="/cart" className="flex items-center gap-5 group">
+          <div
+            onClick={() => setOpenCanvas(!isOpenCanvas)}
+            className="flex items-center gap-5 group cursor-pointer"
+          >
             <Handbag
               className="text-gray-600 group-hover:text-green-500 transition-colors"
-              size={24} />
+              size={24}
+            />
+
             <div>
               <p className="text-gray-500">Shopping cart:</p>
               <p className="group-hover:text-green-500 transition-colors">$</p>
             </div>
-          </Link>
+          </div>
         </div>
       </div>
 
@@ -97,7 +105,7 @@ export default function Navbar() {
         <div className="lg:hidden bg-gray-800 text-white px-4 py-6 space-y-6">
 
           {/* Mobile Search Input */}
-          <div className="flex items-center w-full">
+          <div className="flex items-center w-full ">
             <input
               type="text"
               placeholder="Search..."
