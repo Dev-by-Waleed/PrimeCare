@@ -1,10 +1,414 @@
-import React from 'react'
-import products from '@/data/products.json'
-function page() {
-    
-  return (
-    <div>page</div>
-  )
-}
+"use client"
+import React, { useEffect, useState, useCallback, useContext } from 'react';
+import Image from 'next/image';
+import supabase from '@/Config/Supabase';
+import { Star, Heart, Eye, ShoppingBag, Minus, Plus, Check, Play } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import { CartContext } from '@/Context/cart';
 
-export default page
+export default function ProductPage() {
+  const { slug } = useParams();
+  const router = useRouter();
+  const { dispatch } = useContext(CartContext)
+
+  // State Management
+  const [productDetails, setProductDetails] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState('descriptions');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch Data Callback
+  const fetchProductData = useCallback(async () => {
+    if (!slug) return;
+    setIsLoading(true);
+
+    try {
+      // Fetch Main Product
+      const { data: productData, error: productError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", slug)
+        .single();
+
+      if (productError) throw productError;
+      setProductDetails(productData);
+
+      // Fetch Related Products
+      const { data: relatedData, error: relatedError } = await supabase
+        .from("products")
+        .select("*")
+        .neq("id", slug)
+        .limit(4);
+
+      if (relatedError) throw relatedError;
+      setRelatedProducts(relatedData || []);
+
+    } catch (error) {
+      console.error("Error fetching product data:", error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [slug]);
+
+  // Add to Cart 
+  const AddtoCart = (event, productData) => {
+    event.stopPropagation()
+    dispatch({
+      type: "addProduct",
+      payload: productData
+    })
+  }
+
+  // Trigger Fetch
+  useEffect(() => {
+    fetchProductData();
+  }, [fetchProductData]);
+
+  // Loading Screen Fallback
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00b207]"></div>
+      </div>
+    );
+  }
+
+  // Not Found Fallback
+  if (!productDetails) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">Product Not Found</h1>
+        <button
+          onClick={() => router.push('/')}
+          className="text-[#00b207] hover:underline font-medium"
+        >
+          Return to Shop
+        </button>
+      </div>
+    );
+  }
+
+  // Dynamic price calculation
+  const finalPrice = productDetails.discount > 0
+    ? (productDetails.price - (productDetails.price * (productDetails.discount / 100))).toFixed(2)
+    : productDetails.price.toFixed(2);
+
+  return (
+    <div className="bg-white min-h-screen font-sans text-[#1a1a1a] antialiased">
+      <main className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+
+        {/* ================= PRIMARY PRODUCT SECTION ================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
+
+          {/* LEFT: Single Image View */}
+          <div className="relative border border-gray-100 rounded-2xl overflow-hidden bg-[#f9f9f9] flex items-center justify-center p-8 h-[450px] lg:h-[550px]">
+            {productDetails.productImg && (
+              <Image
+                src={productDetails.productImg}
+                alt={productDetails.productName || "Product Image"}
+                width={500}
+                height={500}
+                priority
+                className="max-h-full max-w-full object-contain mix-blend-multiply transform hover:scale-105 transition-transform duration-300"
+              />
+            )}
+            {productDetails.isBestseller && (
+              <span className="absolute top-6 left-6 bg-amber-400 text-white text-xs font-bold px-3 py-1 rounded-md shadow-sm">
+                Bestseller
+              </span>
+            )}
+            {productDetails.isNew && (
+              <span className="absolute top-6 left-6 bg-[#00b207] text-white text-xs font-bold px-3 py-1 rounded-md shadow-sm">
+                New
+              </span>
+            )}
+          </div>
+
+          {/* RIGHT: Product Meta Details */}
+          <div className="flex flex-col justify-between pt-4">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">{productDetails.productName}</h1>
+                {productDetails.status ? (
+                  <span className="bg-[#e6f7e7] text-[#00b207] text-xs font-medium px-2.5 py-1 rounded-md">In Stock</span>
+                ) : (
+                  <span className="bg-red-50 text-red-500 text-xs font-medium px-2.5 py-1 rounded-md">Out of Stock</span>
+                )}
+              </div>
+
+              {/* Ratings & ID */}
+              <div className="flex items-center gap-4 text-sm text-gray-500 mb-5">
+                <div className="flex items-center text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill={i < 4 ? "currentColor" : "none"} className={i < 4 ? "text-amber-400" : "text-gray-300"} />
+                  ))}
+                  <span className="text-gray-700 font-medium ml-2">4 Reviews</span>
+                </div>
+                <span className="text-gray-300">•</span>
+                <p>Product ID: <span className="text-gray-800 font-medium">{productDetails.id}</span></p>
+              </div>
+
+              {/* Price Grouping */}
+              <div className="flex items-center gap-3 pb-6 border-b border-gray-100 mb-6">
+                {productDetails.discount > 0 && (
+                  <span className="text-gray-400 line-through text-xl">${productDetails.price.toFixed(2)}</span>
+                )}
+                <span className="text-2xl font-bold text-[#00b207]">${finalPrice}</span>
+                {productDetails.discount > 0 && (
+                  <span className="bg-[#fbeae9] text-[#ea4335] text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {productDetails.discount}% Off
+                  </span>
+                )}
+              </div>
+
+              {/* Meta Branding Row */}
+              <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 mb-6">
+                <div className="flex items-center gap-2">
+                  <span>Brand:</span>
+                  <div className="flex items-center gap-1.5 border border-gray-200 rounded px-2 py-0.5 bg-white shadow-sm">
+                    <span className="w-2 h-2 rounded-full bg-[#00b207]"></span>
+                    <span className="font-semibold text-xs tracking-tight text-gray-700">{productDetails.brand}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Short Teaser Text */}
+              <p className="text-gray-500 text-sm leading-relaxed mb-8">
+                {productDetails.shortDesc}
+              </p>
+
+              {/* Controls: Quantity Selector + Add To Cart Actions */}
+              <div className="flex flex-col sm:flex-row gap-4 items-center pb-8 border-b border-gray-100 mb-6">
+                <div className="flex items-center border border-gray-200 rounded-full bg-white p-1 shadow-sm w-full sm:w-auto justify-between">
+                  <button
+                    aria-label="Decrease quantity"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors disabled:opacity-50"
+                    disabled={!productDetails.status || quantity <= 1}
+                  >
+                    <Minus size={16} />
+                  </button>
+                  <span className="px-6 font-medium text-gray-800 text-base">{quantity}</span>
+                  <button
+                    aria-label="Increase quantity"
+                    onClick={() => setQuantity(Math.min(productDetails.stockQty, quantity + 1))}
+                    className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors disabled:opacity-50"
+                    disabled={!productDetails.status || quantity >= productDetails.stockQty}
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => { AddtoCart(event, productDetails) }}
+                  disabled={!productDetails.status}
+                  className="flex-1 w-full flex items-center justify-center gap-3 bg-[#00b207] hover:bg-[#009906] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-8 rounded-full shadow-md shadow-[#00b207]/10 transition-colors"
+                >
+                  Add to Cart
+                  <ShoppingBag size={18} />
+                </button>
+
+                <button aria-label="Add to wishlist" className="p-3.5 border border-gray-200 rounded-full hover:bg-gray-50 text-gray-500 hover:text-[#00b207] transition-all shadow-sm group">
+                  <Heart size={20} className="group-hover:fill-[#00b207]/20" />
+                </button>
+              </div>
+            </div>
+
+            {/* Bottom Taxonomy Tags */}
+            <div className="space-y-2 text-sm text-gray-500">
+              <p><span className="text-gray-800 font-medium">Category:</span> {productDetails.category}</p>
+              <p><span className="text-gray-800 font-medium">Availability:</span> {productDetails.stockQty} units in stock</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ================= DETAILED INFORMATION TABS SECTION ================= */}
+        <div className="border-t border-gray-100 pt-10 mb-20">
+          {/* Tab Navigation Bars */}
+          <div className="flex justify-center gap-8 border-b border-gray-100 mb-10">
+            {['descriptions', 'additional information', 'customer feedback'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pb-4 text-sm font-semibold capitalize transition-all relative ${activeTab === tab ? 'text-gray-900 font-bold' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+              >
+                {tab}
+                {activeTab === tab && (
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00b207]" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Dynamic Tab Body Container */}
+          {activeTab === 'descriptions' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+              {/* Left: Full Description */}
+              <div className="space-y-5 text-sm text-gray-500 leading-relaxed whitespace-pre-line">
+                {productDetails.desc}
+
+                {/* Visual Verification Checks */}
+                <ul className="space-y-3 pt-4">
+                  {[
+                    "100 g of fresh leaves provides.",
+                    "Aliquam ac est at augue volutpat elementum.",
+                    "Quisque nec enim eget sapien molestie.",
+                    "Proin convallis odio volutpat finibus posuere."
+                  ].map((text, i) => (
+                    <li key={i} className="flex items-center gap-3 text-gray-700 font-medium">
+                      <span className="p-0.5 bg-[#e6f7e7] text-[#00b207] rounded-full">
+                        <Check size={14} strokeWidth={3} />
+                      </span>
+                      {text}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Right Side Video/Banner Overlay Panel */}
+              <div className="space-y-4">
+                <div className="relative rounded-2xl overflow-hidden aspect-video bg-gray-100 group shadow-sm">
+                  <Image
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=60"
+                    alt="Promo clip thumbnail"
+                    width={500}
+                    height={500}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
+                    <button aria-label="Play promo video" className="w-14 h-14 bg-[#00b207] text-white flex items-center justify-center rounded-full shadow-lg shadow-[#00b207]/30 transform group-hover:scale-110 transition-transform">
+                      <Play size={20} fill="currentColor" className="ml-0.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Info Badges Subgroup */}
+                <div className="grid grid-cols-2 gap-4 border border-gray-100 rounded-xl p-4 bg-white shadow-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-[#e6f7e7] text-[#00b207] rounded-xl font-bold text-sm">%</div>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-800">64% Discount</h4>
+                      <p className="text-xs text-gray-400">Save your 64% money with us</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 border-l border-gray-100 pl-4">
+                    <div className="p-3 bg-[#e6f7e7] text-[#00b207] rounded-xl text-sm">🌱</div>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-800">100% Organic</h4>
+                      <p className="text-xs text-gray-400">100% Organic Vegetables</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ================= RELATED PRODUCTS COMPONENT GRID ================= */}
+        {relatedProducts.length > 0 && (
+          <div className="border-t border-gray-100 pt-16 mb-12">
+            <h2 className="text-3xl font-semibold text-center text-gray-900 mb-10">Related Products</h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              {relatedProducts.map((product) => {
+                const itemFinalPrice = product.discount > 0
+                  ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
+                  : product.price.toFixed(2);
+
+                return (
+                  <div
+                    key={product.id}
+                    onClick={() => router.push(`/product-page/${product.id}`)}
+                    className="bg-white border border-gray-100 rounded-xl overflow-hidden p-4 group hover:border-gray-200 hover:shadow-md transition-all relative flex flex-col justify-between cursor-pointer"
+                  >
+                    {/* Sale Dynamic Badge */}
+                    {product.discount > 0 && (
+                      <span className="absolute top-3 left-3 bg-[#ea4335] text-white text-[10px] font-bold px-2 py-0.5 rounded z-10">
+                        Sale {product.discount}%
+                      </span>
+                    )}
+
+                    {/* Hover Actions */}
+                    <div className="absolute top-3 right-3 flex flex-col gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button aria-label="Add to wishlist" className="p-2 bg-white border border-gray-100 rounded-full text-gray-600 hover:bg-[#00b207] hover:text-white hover:border-[#00b207] shadow-sm transition-all">
+                        <Heart size={14} />
+                      </button>
+                      <button aria-label="Quick view" className="p-2 bg-white border border-gray-100 rounded-full text-gray-600 hover:bg-[#00b207] hover:text-white hover:border-[#00b207] shadow-sm transition-all">
+                        <Eye size={14} />
+                      </button>
+                    </div>
+
+                    {/* Product Box Image Content */}
+                    <div className="h-44 w-full flex items-center justify-center p-2 mb-4 bg-[#f9f9f9] rounded-lg">
+                      <Image
+                        src={product.productImg}
+                        alt={product.productName}
+                        width={500}
+                        height={500}
+                        className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform"
+                      />
+                    </div>
+
+                    {/* Title & Pricing */}
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-700 group-hover:text-[#00b207] transition-colors mb-2 line-clamp-1">
+                        {product.productName}
+                      </h3>
+
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-sm font-bold text-gray-900">${itemFinalPrice}</span>
+                          {product.discount > 0 && (
+                            <span className="text-xs text-gray-400 line-through">${product.price.toFixed(2)}</span>
+                          )}
+                        </div>
+                        <button
+                          aria-label="Add to Cart"
+                          onClick={(event) => { AddtoCart(event, product) }}
+                          // Handle Add to cart logic here
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-700 hover:bg-[#00b207] hover:text-white transition-colors"
+                        >
+                          <ShoppingBag size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )
+        }
+
+      </main >
+
+      {/* ================= FOOTER NEWSLETTER CAPTURE BAR ================= */}
+      < footer className="bg-[#f2f2f2] border-t border-gray-200 py-8" >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+
+          <div className="max-w-md text-center md:text-left">
+            <h3 className="text-xl font-bold text-gray-900 mb-1">Subscribe to our Newsletter</h3>
+            <p className="text-xs text-gray-500 leading-normal">
+              Stay updated with the latest fresh produce and exclusive discounts sent directly to your inbox.
+            </p>
+          </div>
+
+          <div className="relative flex items-center w-full md:max-w-md">
+            <input
+              type="email"
+              aria-label="Email address"
+              placeholder="Your email address..."
+              className="w-full bg-white border border-gray-300 rounded-full px-5 py-3 text-sm focus:outline-none focus:border-[#00b207] text-gray-700 shadow-sm"
+            />
+            <button className="absolute right-1 top-1 bottom-1 bg-[#00b207] hover:bg-[#009906] text-white text-xs font-semibold px-6 rounded-full shadow-sm transition-colors">
+              Subscribe
+            </button>
+          </div>
+
+        </div>
+      </footer >
+    </div >
+  );
+}

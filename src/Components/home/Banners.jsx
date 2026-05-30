@@ -1,6 +1,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 function Banners() {
     return (
         <div className='banners-section max-w-[1200px] grid grid-1 md:grid-cols-3 gap-5 mx-auto p-4'>
@@ -27,8 +28,8 @@ function Banners() {
                         </div>
                     </div>
                     <button className="w-max bg-white text-green-500 px-12 py-2 m-2 text-bold rounded-4xl hover:bg-gray-200 transition-colors hover:cursor-pointer">
-                        Shop Now <ArrowRight className='inline-block ml-2' size={20} />
-                    </button>
+                        <Link href={"products-page"}>Shop Now <ArrowRight className='inline-block ml-2' size={20} />
+                        </Link>                    </button>
                 </div>
             </div>
             <div className='relative rounded-2xl overflow-hidden'>
@@ -42,7 +43,8 @@ function Banners() {
                         <span className='text-green-500 text-xl font-bold'>$79.99</span>
                     </div>
                     <button className="w-max bg-white text-green-500 px-12 py-2 m-2 text-bold rounded-4xl hover:bg-gray-200 transition-colors hover:cursor-pointer">
-                        Shop Now <ArrowRight className='inline-block ml-2' size={20} />
+                        <Link href={"products-page"}>Shop Now <ArrowRight className='inline-block ml-2' size={20} />
+                        </Link>
                     </button>
                 </div>
             </div>
@@ -57,8 +59,8 @@ function Banners() {
                         <span className='bg-black rounded text-yellow-400 text-xl font-bold px-2'>64% OFF</span>
                     </div>
                     <button className="w-max bg-white text-green-500 px-12 py-2 m-2 text-bold rounded-4xl hover:bg-gray-200 transition-colors hover:cursor-pointer">
-                        Shop Now <ArrowRight className='inline-block ml-2' size={20} />
-                    </button>
+                        <Link href={"products-page"}>Shop Now <ArrowRight className='inline-block ml-2' size={20} />
+                        </Link>                    </button>
                 </div>
             </div>
         </div>

@@ -4,6 +4,7 @@ import Navbar from "@/Components/navbar/Navbar";
 import { OffCanvasProvider } from "@/Context/canvas";
 import { CartProvider } from "@/Context/cart";
 import Cart from "@/Components/Cart";
+import Footer from "@/Components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
             <Navbar />
             {children}
             <Cart />
+            <Footer />
           </OffCanvasProvider>
         </CartProvider>
       </body>

@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { ArrowRight, Van, Headset, Handbag, Package } from 'lucide-react';
 function HeroSection() {
     return (
@@ -32,8 +33,10 @@ function HeroSection() {
                             <span className='bg-orange-400 p-2 rounded-md'>30% OFF</span>
                             <p className='p-2 text-sm text-gray-300'>Free shipping on all your order.</p>
                         </div>
-                        <button className="w-max bg-white/80 text-green-500 px-12 py-4 m-2 text-bold rounded-4xl hover:bg-black transition-colors">
-                            Shop Now <ArrowRight className='inline-block ml-2' size={20} />
+                        <button className="w-max bg-white/80 text-green-500 px-12 py-4 m-2 text-bold rounded-4xl hover:bg-black transition-colors duration-300 ease-in-out">
+                            <Link href={"products-page"}>
+                                Shop Now <ArrowRight className='inline-block ml-2' size={20} />
+                            </Link>
                         </button>
                     </div>
                 </div>
@@ -52,8 +55,9 @@ function HeroSection() {
                         <h1 className='text-3xl'>75% OFF</h1>
                         <p className='text-sm text-gray-500'>Only Fruit & Vegetable</p>
                         <button className=" text-green-500 px-4 py-2 rounded-md text-bold hover:text-black">
-                            Shop Now <ArrowRight className='inline-block ml-2' size={20} />
-                        </button>
+                            <Link href={"products-page"}>
+                                Shop Now <ArrowRight className='inline-block ml-2' size={20} />
+                            </Link>                        </button>
                     </div>
                 </div>
 
@@ -70,8 +74,9 @@ function HeroSection() {
                         <p>Best Deal</p>
                         <h2 className='text-4xl text-bold'>Special Products Deal of the Month</h2>
                         <button className=" text-green-500 px-4 py-4 rounded-md text-bold hover:text-black">
-                            Shop Now <ArrowRight className='inline-block ml-2' size={20} />
-                        </button>
+                            <Link href={"products-page"}>
+                                Shop Now <ArrowRight className='inline-block ml-2' size={20} />
+                            </Link>                        </button>
                     </div>
                 </div>
 
