@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
 
 // Extract data into an array so we can easily rotate it
@@ -48,7 +49,7 @@ function CategoriesSection() {
     }, []);
 
     return (
-        <div className='categories-section p-4 max-w-[1200px] mx-auto'>
+        <div className='bg-background categories-section p-4 max-w-[1200px] mx-auto'>
             <div className='flex justify-between'>
                 <h3 className='text-xl font-bold py-5'>Popular Categories</h3>
                 <div className='py-5 flex gap-2'>
@@ -72,6 +73,7 @@ function CategoriesSection() {
                 {categories.slice(0, 6).map((item) => (
                     <div key={item.id} className='hover:cursor-pointer'>
 
+                        <Link href={"products-page"}>
                         <div className='category-item relative w-36 h-36 sm:w-40 sm:h-40 lg:w-48 lg:h-48 bg-white rounded-lg shadow-md border-2 border-green-500 hover:opacity-80 transition-opacity overflow-hidden'>
 
                             <Image
@@ -85,6 +87,7 @@ function CategoriesSection() {
                         <div className='category-name text-center mt-2 text-sm sm:text-base font-semibold'>
                             {item.alt}
                         </div>
+                        </Link>
                     </div>
                 ))}
             </div>

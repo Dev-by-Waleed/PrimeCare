@@ -5,6 +5,7 @@ import ProductModal from '@/Components/ProductModal';
 function page() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [products, setProducts] = useState([]);
+    
     useEffect(() => {
         getProducts()
     }, [])
@@ -21,15 +22,14 @@ function page() {
             console.error('Error fetching products:', error);
         } else {
             setProducts(data);
-            console.log(data)
 
         }
     }
     return (
-        <div className='min-h-screen flex flex-col bg-gray-100'>
+        <div className=' min-h-screen flex flex-col'>
             <div className='max-w-7xl mx-auto px-4 py-10'>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Add New Product</h1>
+                    <h1 className="text-2xl font-bold text-foreground tracking-tight">Add New Product</h1>
                     <p className="mt-1 text-sm text-gray-500">
                         Upload a new item to your pharmacy & safe products inventory.
                     </p>

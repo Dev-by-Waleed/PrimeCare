@@ -33,7 +33,7 @@ function ProductsSection() {
     }
 
     return (
-        <div className='max-w-[1200px] mx-auto p-4'>
+        <div className='bg-background max-w-[1200px] mx-auto p-4'>
             <h3 className='text-xl font-bold py-5'>Popular Products</h3>
             <div className='products-container grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4'>
                 {Array.isArray(products) &&

@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 function Banners() {
     return (
-        <div className='banners-section max-w-[1200px] grid grid-1 md:grid-cols-3 gap-5 mx-auto p-4'>
+        <div className='bg-background banners-section max-w-[1200px] grid grid-1 md:grid-cols-3 gap-5 mx-auto p-4'>
             <div className='relative rounded-2xl overflow-hidden'>
                 <Image src="/VegeBanner.png" alt="Vegetable Banner" width={1200} height={400} />
                 <div className="absolute inset-0 bg-black/10 text-white p-6 flex flex-col justify-start items-center rounded-2xl">

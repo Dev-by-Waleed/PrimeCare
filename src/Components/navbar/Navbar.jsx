@@ -25,12 +25,12 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="w-full border-b bg-white">
+    <nav className=" w-full border-b">
       {/* 1. Top bar → Hidden on mobile, visible on medium+ screens */}
-      <div className="hidden md:flex bg-white text-gray-500 py-2 px-4 justify-between items-center mx-auto max-w-7xl border-b">
+      <div className="hidden md:flex text-foreground py-2 px-4 justify-between items-center mx-auto max-w-7xl border-b">
         <p className="text-sm">Store Location: Lincoln- 344, Illinois, Chicago, USA</p>
         <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm text-gray-600 hover:text-black">
+          <Link href="/login" className="text-sm text-foreground hover:text-green-500">
             Login
           </Link>
           <Link href="/register" className="text-sm bg-green-500 px-4 py-1.5 rounded text-white hover:bg-green-600 transition-colors">
@@ -40,7 +40,7 @@ export default function Navbar() {
       </div>
 
       {/* 2. Main Navbar */}
-      <div className="flex justify-between items-center bg-white text-black py-2 px-4 mx-auto max-w-7xl">
+      <div className="flex justify-between items-center text-black py-2 px-4 mx-auto max-w-7xl">
         {/* Left side: Logo & Mobile Menu Icon */}
         <div className="flex items-center gap-4">
           <button
@@ -72,7 +72,7 @@ export default function Navbar() {
         {/* Right side: Icons */}
         <div className="flex items-center gap-4">
           <Link href="/wishlist">
-            <Heart className="text-gray-600 hover:text-green-500 transition-colors" size={24} />
+            <Heart className="text-text-muted hover:text-green-500 transition-colors" size={24} />
           </Link>
           
           <div className="w-px h-6 bg-gray-300" />
@@ -83,20 +83,20 @@ export default function Navbar() {
             className="flex items-center gap-3 group cursor-pointer"
           >
             <div className="relative">
-              <Handbag className="text-gray-600 group-hover:text-green-500 transition-colors" size={24} />
+              <Handbag className="text-text-muted group-hover:text-green-500 transition-colors" size={24} />
               
               {/* Added a notification badge for item quantity */}
               {getTotalItems() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-green-500 text-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {getTotalItems()}
                 </span>
               )}
             </div>
 
             <div>
-              <p className="text-gray-500 text-sm">Shopping cart:</p>
+              <p className="text-text-muted text-sm">Shopping cart:</p>
               {/* Wired up the dynamic subtotal */}
-              <p className="font-bold group-hover:text-green-500 transition-colors">
+              <p className="font-bold text-foreground group-hover:text-green-500 transition-colors">
                 ${getSubTotal().toFixed(2)}
               </p>
             </div>

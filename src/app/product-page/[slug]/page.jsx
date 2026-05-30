@@ -68,7 +68,7 @@ export default function ProductPage() {
   // Loading Screen Fallback
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00b207]"></div>
       </div>
     );
@@ -77,11 +77,11 @@ export default function ProductPage() {
   // Not Found Fallback
   if (!productDetails) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Product Not Found</h1>
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <h1 className="text-3xl font-bold text-foreground mb-4">Product Not Found</h1>
         <button
           onClick={() => router.push('/')}
-          className="text-[#00b207] hover:underline font-medium"
+          className="text-green-500 hover:underline font-medium"
         >
           Return to Shop
         </button>
@@ -95,7 +95,7 @@ export default function ProductPage() {
     : productDetails.price.toFixed(2);
 
   return (
-    <div className="bg-white min-h-screen font-sans text-[#1a1a1a] antialiased">
+    <div className="min-h-screen font-sans text-[#1a1a1a] antialiased">
       <main className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
 
         {/* ================= PRIMARY PRODUCT SECTION ================= */}
@@ -119,7 +119,7 @@ export default function ProductPage() {
               </span>
             )}
             {productDetails.isNew && (
-              <span className="absolute top-6 left-6 bg-[#00b207] text-white text-xs font-bold px-3 py-1 rounded-md shadow-sm">
+              <span className="absolute top-6 left-6 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-md shadow-sm">
                 New
               </span>
             )}
@@ -129,24 +129,24 @@ export default function ProductPage() {
           <div className="flex flex-col justify-between pt-4">
             <div>
               <div className="flex items-center gap-3 mb-3">
-                <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">{productDetails.productName}</h1>
+                <h1 className="text-3xl font-semibold text-foreground tracking-tight">{productDetails.productName}</h1>
                 {productDetails.status ? (
-                  <span className="bg-[#e6f7e7] text-[#00b207] text-xs font-medium px-2.5 py-1 rounded-md">In Stock</span>
+                  <span className="bg-[#e6f7e7] text-green-500 text-xs font-medium px-2.5 py-1 rounded-md">In Stock</span>
                 ) : (
                   <span className="bg-red-50 text-red-500 text-xs font-medium px-2.5 py-1 rounded-md">Out of Stock</span>
                 )}
               </div>
 
               {/* Ratings & ID */}
-              <div className="flex items-center gap-4 text-sm text-gray-500 mb-5">
+              <div className="flex items-center gap-4 text-sm text-text-muted mb-5">
                 <div className="flex items-center text-amber-400">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} size={16} fill={i < 4 ? "currentColor" : "none"} className={i < 4 ? "text-amber-400" : "text-gray-300"} />
                   ))}
-                  <span className="text-gray-700 font-medium ml-2">4 Reviews</span>
+                  <span className="text-text-muted font-medium ml-2">4 Reviews</span>
                 </div>
                 <span className="text-gray-300">•</span>
-                <p>Product ID: <span className="text-gray-800 font-medium">{productDetails.id}</span></p>
+                <p>Product ID: <span className="text-foreground font-medium">{productDetails.id}</span></p>
               </div>
 
               {/* Price Grouping */}
@@ -154,7 +154,7 @@ export default function ProductPage() {
                 {productDetails.discount > 0 && (
                   <span className="text-gray-400 line-through text-xl">${productDetails.price.toFixed(2)}</span>
                 )}
-                <span className="text-2xl font-bold text-[#00b207]">${finalPrice}</span>
+                <span className="text-2xl font-bold text-green-500">${finalPrice}</span>
                 {productDetails.discount > 0 && (
                   <span className="bg-[#fbeae9] text-[#ea4335] text-xs font-semibold px-2 py-0.5 rounded-full">
                     {productDetails.discount}% Off
@@ -163,37 +163,37 @@ export default function ProductPage() {
               </div>
 
               {/* Meta Branding Row */}
-              <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 mb-6">
+              <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-foreground mb-6">
                 <div className="flex items-center gap-2">
                   <span>Brand:</span>
                   <div className="flex items-center gap-1.5 border border-gray-200 rounded px-2 py-0.5 bg-white shadow-sm">
-                    <span className="w-2 h-2 rounded-full bg-[#00b207]"></span>
-                    <span className="font-semibold text-xs tracking-tight text-gray-700">{productDetails.brand}</span>
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                    <span className="font-semibold text-xs tracking-tight text-text-muted">{productDetails.brand}</span>
                   </div>
                 </div>
               </div>
 
               {/* Short Teaser Text */}
-              <p className="text-gray-500 text-sm leading-relaxed mb-8">
+              <p className="text-text-muted text-sm leading-relaxed mb-8">
                 {productDetails.shortDesc}
               </p>
 
               {/* Controls: Quantity Selector + Add To Cart Actions */}
               <div className="flex flex-col sm:flex-row gap-4 items-center pb-8 border-b border-gray-100 mb-6">
-                <div className="flex items-center border border-gray-200 rounded-full bg-white p-1 shadow-sm w-full sm:w-auto justify-between">
+                <div className="flex items-center border border-gray-200 rounded-full p-1 shadow-sm w-full sm:w-auto justify-between">
                   <button
                     aria-label="Decrease quantity"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors disabled:opacity-50"
+                    className="p-2 hover:bg-gray-100 rounded-full text-text-muted transition-colors disabled:opacity-50"
                     disabled={!productDetails.status || quantity <= 1}
                   >
                     <Minus size={16} />
                   </button>
-                  <span className="px-6 font-medium text-gray-800 text-base">{quantity}</span>
+                  <span className="px-6 font-medium text-foreground text-base">{quantity}</span>
                   <button
                     aria-label="Increase quantity"
                     onClick={() => setQuantity(Math.min(productDetails.stockQty, quantity + 1))}
-                    className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors disabled:opacity-50"
+                    className="p-2 hover:bg-gray-100 rounded-full text-text-muted transition-colors disabled:opacity-50"
                     disabled={!productDetails.status || quantity >= productDetails.stockQty}
                   >
                     <Plus size={16} />
@@ -203,22 +203,22 @@ export default function ProductPage() {
                 <button
                   onClick={() => { AddtoCart(event, productDetails) }}
                   disabled={!productDetails.status}
-                  className="flex-1 w-full flex items-center justify-center gap-3 bg-[#00b207] hover:bg-[#009906] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-8 rounded-full shadow-md shadow-[#00b207]/10 transition-colors"
+                  className="flex-1 w-full flex items-center justify-center gap-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-8 rounded-full shadow-md shadow-[#00b207]/10 transition-colors"
                 >
                   Add to Cart
                   <ShoppingBag size={18} />
                 </button>
 
-                <button aria-label="Add to wishlist" className="p-3.5 border border-gray-200 rounded-full hover:bg-gray-50 text-gray-500 hover:text-[#00b207] transition-all shadow-sm group">
+                <button aria-label="Add to wishlist" className="p-3.5 border border-gray-200 rounded-full hover:bg-gray-50 text-text-muted hover:text-green-500 transition-all shadow-sm group">
                   <Heart size={20} className="group-hover:fill-[#00b207]/20" />
                 </button>
               </div>
             </div>
 
             {/* Bottom Taxonomy Tags */}
-            <div className="space-y-2 text-sm text-gray-500">
-              <p><span className="text-gray-800 font-medium">Category:</span> {productDetails.category}</p>
-              <p><span className="text-gray-800 font-medium">Availability:</span> {productDetails.stockQty} units in stock</p>
+            <div className="space-y-2 text-sm text-text-muted">
+              <p><span className="text-foreground font-medium">Category:</span> {productDetails.category}</p>
+              <p><span className="text-foreground font-medium">Availability:</span> {productDetails.stockQty} units in stock</p>
             </div>
           </div>
         </div>
@@ -231,12 +231,12 @@ export default function ProductPage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`pb-4 text-sm font-semibold capitalize transition-all relative ${activeTab === tab ? 'text-gray-900 font-bold' : 'text-gray-400 hover:text-gray-600'
+                className={`pb-4 text-sm font-semibold capitalize transition-all relative ${activeTab === tab ? 'text-text-muted font-bold' : 'text-gray-400 hover:text-text-muted'
                   }`}
               >
                 {tab}
                 {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00b207]" />
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-green-500" />
                 )}
               </button>
             ))}
@@ -246,7 +246,7 @@ export default function ProductPage() {
           {activeTab === 'descriptions' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
               {/* Left: Full Description */}
-              <div className="space-y-5 text-sm text-gray-500 leading-relaxed whitespace-pre-line">
+              <div className="space-y-5 text-sm text-text-muted leading-relaxed whitespace-pre-line">
                 {productDetails.desc}
 
                 {/* Visual Verification Checks */}
@@ -257,8 +257,8 @@ export default function ProductPage() {
                     "Quisque nec enim eget sapien molestie.",
                     "Proin convallis odio volutpat finibus posuere."
                   ].map((text, i) => (
-                    <li key={i} className="flex items-center gap-3 text-gray-700 font-medium">
-                      <span className="p-0.5 bg-[#e6f7e7] text-[#00b207] rounded-full">
+                    <li key={i} className="flex items-center gap-3 text-text-muted font-medium">
+                      <span className="p-0.5 bg-[#e6f7e7] text-green-500 rounded-full">
                         <Check size={14} strokeWidth={3} />
                       </span>
                       {text}
@@ -278,25 +278,25 @@ export default function ProductPage() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                    <button aria-label="Play promo video" className="w-14 h-14 bg-[#00b207] text-white flex items-center justify-center rounded-full shadow-lg shadow-[#00b207]/30 transform group-hover:scale-110 transition-transform">
+                    <button aria-label="Play promo video" className="w-14 h-14 bg-green-500 text-white flex items-center justify-center rounded-full shadow-lg shadow-[#00b207]/30 transform group-hover:scale-110 transition-transform">
                       <Play size={20} fill="currentColor" className="ml-0.5" />
                     </button>
                   </div>
                 </div>
 
                 {/* Info Badges Subgroup */}
-                <div className="grid grid-cols-2 gap-4 border border-gray-100 rounded-xl p-4 bg-white shadow-xs">
+                <div className="grid grid-cols-2 gap-4 border border-gray-100 rounded-xl p-4  shadow-xs">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-[#e6f7e7] text-[#00b207] rounded-xl font-bold text-sm">%</div>
+                    <div className="p-3 bg-[#e6f7e7] text-green-500 rounded-xl font-bold text-sm">%</div>
                     <div>
-                      <h4 className="text-sm font-bold text-gray-800">64% Discount</h4>
+                      <h4 className="text-sm font-bold text-foreground">64% Discount</h4>
                       <p className="text-xs text-gray-400">Save your 64% money with us</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 border-l border-gray-100 pl-4">
-                    <div className="p-3 bg-[#e6f7e7] text-[#00b207] rounded-xl text-sm">🌱</div>
+                    <div className="p-3 bg-[#e6f7e7] text-green-500 rounded-xl text-sm">🌱</div>
                     <div>
-                      <h4 className="text-sm font-bold text-gray-800">100% Organic</h4>
+                      <h4 className="text-sm font-bold text-foreground">100% Organic</h4>
                       <p className="text-xs text-gray-400">100% Organic Vegetables</p>
                     </div>
                   </div>
@@ -309,7 +309,7 @@ export default function ProductPage() {
         {/* ================= RELATED PRODUCTS COMPONENT GRID ================= */}
         {relatedProducts.length > 0 && (
           <div className="border-t border-gray-100 pt-16 mb-12">
-            <h2 className="text-3xl font-semibold text-center text-gray-900 mb-10">Related Products</h2>
+            <h2 className="text-3xl font-semibold text-center text-text-muted mb-10">Related Products</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {relatedProducts.map((product) => {
@@ -321,21 +321,21 @@ export default function ProductPage() {
                   <div
                     key={product.id}
                     onClick={() => router.push(`/product-page/${product.id}`)}
-                    className="bg-white border border-gray-100 rounded-xl overflow-hidden p-4 group hover:border-gray-200 hover:shadow-md transition-all relative flex flex-col justify-between cursor-pointer"
+                    className="border border-gray-100 rounded-xl overflow-hidden p-4 group hover:border-gray-200 hover:shadow-md transition-all relative flex flex-col justify-between cursor-pointer"
                   >
                     {/* Sale Dynamic Badge */}
                     {product.discount > 0 && (
-                      <span className="absolute top-3 left-3 bg-[#ea4335] text-white text-[10px] font-bold px-2 py-0.5 rounded z-10">
+                      <span className="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded z-10">
                         Sale {product.discount}%
                       </span>
                     )}
 
                     {/* Hover Actions */}
                     <div className="absolute top-3 right-3 flex flex-col gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button aria-label="Add to wishlist" className="p-2 bg-white border border-gray-100 rounded-full text-gray-600 hover:bg-[#00b207] hover:text-white hover:border-[#00b207] shadow-sm transition-all">
+                      <button aria-label="Add to wishlist" className="p-2 bg-white border border-gray-100 rounded-full text-text-muted hover:bg-green-500 hover:text-white hover:border-[#00b207] shadow-sm transition-all">
                         <Heart size={14} />
                       </button>
-                      <button aria-label="Quick view" className="p-2 bg-white border border-gray-100 rounded-full text-gray-600 hover:bg-[#00b207] hover:text-white hover:border-[#00b207] shadow-sm transition-all">
+                      <button aria-label="Quick view" className="p-2 bg-white border border-gray-100 rounded-full text-text-muted hover:bg-green-500 hover:text-white hover:border-[#00b207] shadow-sm transition-all">
                         <Eye size={14} />
                       </button>
                     </div>
@@ -353,13 +353,13 @@ export default function ProductPage() {
 
                     {/* Title & Pricing */}
                     <div>
-                      <h3 className="text-sm font-medium text-gray-700 group-hover:text-[#00b207] transition-colors mb-2 line-clamp-1">
+                      <h3 className="text-sm font-medium text-foreground group-hover:text-green-500 transition-colors mb-2 line-clamp-1">
                         {product.productName}
                       </h3>
 
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-baseline gap-1.5">
-                          <span className="text-sm font-bold text-gray-900">${itemFinalPrice}</span>
+                          <span className="text-sm font-bold text-foreground">${itemFinalPrice}</span>
                           {product.discount > 0 && (
                             <span className="text-xs text-gray-400 line-through">${product.price.toFixed(2)}</span>
                           )}
@@ -368,7 +368,7 @@ export default function ProductPage() {
                           aria-label="Add to Cart"
                           onClick={(event) => { AddtoCart(event, product) }}
                           // Handle Add to cart logic here
-                          className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-700 hover:bg-[#00b207] hover:text-white transition-colors"
+                          className="w-8 h-8 flex items-center justify-center rounded-full text-text-muted hover:bg-green-500 hover:text-white transition-colors"
                         >
                           <ShoppingBag size={14} />
                         </button>
@@ -389,8 +389,8 @@ export default function ProductPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
 
           <div className="max-w-md text-center md:text-left">
-            <h3 className="text-xl font-bold text-gray-900 mb-1">Subscribe to our Newsletter</h3>
-            <p className="text-xs text-gray-500 leading-normal">
+            <h3 className="text-xl font-bold text-gray-800 mb-1">Subscribe to our Newsletter</h3>
+            <p className="text-xs text-text-muted leading-normal">
               Stay updated with the latest fresh produce and exclusive discounts sent directly to your inbox.
             </p>
           </div>
@@ -400,9 +400,9 @@ export default function ProductPage() {
               type="email"
               aria-label="Email address"
               placeholder="Your email address..."
-              className="w-full bg-white border border-gray-300 rounded-full px-5 py-3 text-sm focus:outline-none focus:border-[#00b207] text-gray-700 shadow-sm"
+              className="w-full bg-white border border-gray-300 rounded-full px-5 py-3 text-sm focus:outline-none focus:border-[#00b207] text-text-muted shadow-sm"
             />
-            <button className="absolute right-1 top-1 bottom-1 bg-[#00b207] hover:bg-[#009906] text-white text-xs font-semibold px-6 rounded-full shadow-sm transition-colors">
+            <button className="absolute right-1 top-1 bottom-1 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-6 rounded-full shadow-sm transition-colors">
               Subscribe
             </button>
           </div>

@@ -5,7 +5,7 @@ import { ArrowRight, Van, Headset, Handbag, Package } from 'lucide-react';
 function HeroSection() {
     return (
         // Added a container to keep it nicely centered with some padding
-        <div className="w-full max-w-[1200px] mx-auto p-4">
+        <div className="bg-background w-full max-w-[1200px] mx-auto p-4">
             {/* GRID CONTAINER: 
         - grid-cols-1: 1 column on mobile (stack vertically)
         - md:grid-cols-3: 3 columns on medium screens and up
@@ -87,28 +87,28 @@ function HeroSection() {
                     <Van size={24} className='text-green-500' />
                     <div className='ml-2'>
                         <p>Free Shipping</p>
-                        <p className='text-gray-300'>Free shipping on all your order</p>
+                        <p className='text-text-muted'>Free shipping on all your order</p>
                     </div>
                 </div>
                 <div className='flex place-items-center'>
                     <Headset size={24} className='text-green-500' />
                     <div className='ml-2'>
                         <p>24/7 Support</p>
-                        <p className='text-gray-300'>Instant access to Support</p>
+                        <p className='text-text-muted'>Instant access to Support</p>
                     </div>
                 </div>
                 <div className='flex place-items-center'>
                     <Handbag size={24} className='text-green-500' />
                     <div className='ml-2'>
                         <p>Easy Returns</p>
-                        <p className='text-gray-300'>30-day return policy</p>
+                        <p className='text-text-muted'>30-day return policy</p>
                     </div>
                 </div>
                 <div className='flex place-items-center'>
                     <Package size={24} className='text-green-500' />
                     <div className='ml-2'>
                         <p>Quality Guarantee</p>
-                        <p className='text-gray-300'>High-quality products guaranteed</p>
+                        <p className='text-text-muted'>High-quality products guaranteed</p>
                     </div>
                 </div>
 
