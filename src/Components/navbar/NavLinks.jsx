@@ -6,6 +6,7 @@ const navLinks = [
   { name: "Products", href: "/products-page" },
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
+  { name: "Admin", href: "/admin/products"}
 ];
 
 export default function NavLinks({ className, linkClassName, onClick }) {

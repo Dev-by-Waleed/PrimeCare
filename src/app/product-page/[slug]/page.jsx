@@ -56,7 +56,8 @@ export default function ProductPage() {
     event.stopPropagation()
     dispatch({
       type: "addProduct",
-      payload: productData
+      // Merge the selected quantity into the product payload
+      payload: { ...productData, quantity: quantity } 
     })
   }
 
@@ -96,7 +97,7 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen font-sans text-[#1a1a1a] antialiased">
-      <main className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+      <main className="bg-background max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
 
         {/* ================= PRIMARY PRODUCT SECTION ================= */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">

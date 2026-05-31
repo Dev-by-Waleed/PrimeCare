@@ -25,9 +25,9 @@ export default function Navbar() {
   };
 
   return (
-    <nav className=" w-full border-b">
+    <nav className=" z-50 w-full border-b">
       {/* 1. Top bar → Hidden on mobile, visible on medium+ screens */}
-      <div className="hidden md:flex text-foreground py-2 px-4 justify-between items-center mx-auto max-w-7xl border-b">
+      <div className="sticky top-0 hidden md:flex text-foreground py-2 px-4 justify-between items-center mx-auto max-w-7xl border-b">
         <p className="text-sm">Store Location: Lincoln- 344, Illinois, Chicago, USA</p>
         <div className="flex items-center gap-3">
           <Link href="/login" className="text-sm text-foreground hover:text-green-500">
@@ -40,7 +40,7 @@ export default function Navbar() {
       </div>
 
       {/* 2. Main Navbar */}
-      <div className="flex justify-between items-center text-black py-2 px-4 mx-auto max-w-7xl">
+      <div className="sticky top-0 flex justify-between items-center text-black py-2 px-4 mx-auto max-w-7xl">
         {/* Left side: Logo & Mobile Menu Icon */}
         <div className="flex items-center gap-4">
           <button
@@ -48,7 +48,7 @@ export default function Navbar() {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle Menu"
           >
-            {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
+            {isMenuOpen ? <X className='text-white' size={26} /> : <Menu className='text-white' size={26} />}
           </button>
 
           <Link href="/" className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export default function Navbar() {
       </div>
 
       {/* 3. Bottom Nav Bar (Desktop Only) */}
-      <div className="hidden lg:block bg-gray-800 text-white">
+      <div className="sticky top-0 hidden lg:block bg-gray-800 text-white">
         <div className="max-w-[1200px] mx-auto px-4 justify-between items-center py-3 flex">
           <NavLinks
             className="flex items-center gap-8"
