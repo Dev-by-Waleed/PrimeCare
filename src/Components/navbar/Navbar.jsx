@@ -4,13 +4,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Handbag, Phone, Menu, X } from 'lucide-react';
 import NavLinks from './NavLinks';
+import NavSearch from './NavSearch';
 import { OffCanvasContext } from '@/Context/canvas';
-import { CartContext } from '@/Context/cart'; // 1. Imported CartContext
+import { CartContext } from '@/Context/cart';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function Navbar() {
   const { isOpenCanvas, setOpenCanvas } = useContext(OffCanvasContext);
-  const { cartItems } = useContext(CartContext); // 2. Hooked into cartItems
+  const { cartItems } = useContext(CartContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
 
   // 3. Helper to calculate total price
   const getSubTotal = () => {
@@ -23,6 +26,7 @@ export default function Navbar() {
   const getTotalItems = () => {
     return cartItems?.reduce((acc, item) => acc + item.quantity, 0) || 0;
   };
+
 
   return (
     <nav className=" z-50 w-full border-b">
@@ -59,14 +63,7 @@ export default function Navbar() {
 
         {/* Center: Search bar */}
         <div className="hidden lg:flex flex-1 max-w-2xl mx-8 items-center">
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full border border-gray-300 rounded-l py-2 px-4 focus:outline-none focus:border-green-500"
-          />
-          <button className="bg-green-500 px-6 py-2 rounded-r text-white hover:bg-green-600 transition-colors">
-            Search
-          </button>
+          <NavSearch />
         </div>
 
         {/* Right side: Icons */}
@@ -74,9 +71,9 @@ export default function Navbar() {
           <Link href="/wishlist">
             <Heart className="text-text-muted hover:text-green-500 transition-colors" size={24} />
           </Link>
-          
+
           <div className="w-px h-6 bg-gray-300" />
-          
+
           {/* UPDATED: Cart Section */}
           <div
             onClick={() => setOpenCanvas(!isOpenCanvas)}
@@ -84,7 +81,7 @@ export default function Navbar() {
           >
             <div className="relative">
               <Handbag className="text-text-muted group-hover:text-green-500 transition-colors" size={24} />
-              
+
               {/* Added a notification badge for item quantity */}
               {getTotalItems() > 0 && (
                 <span className="absolute -top-2 -right-2 bg-green-500 text-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -121,15 +118,8 @@ export default function Navbar() {
       {/* 4. Mobile Dropdown Menu */}
       {isMenuOpen && (
         <div className="lg:hidden bg-gray-800 text-white px-4 py-6 space-y-6">
-          <div className="flex items-center w-full ">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full border border-gray-700 bg-gray-800 text-white rounded-l py-2 px-4 focus:outline-none focus:border-green-500"
-            />
-            <button className="bg-green-500 px-4 py-2 rounded-r text-white">
-              Search
-            </button>
+          <div className="w-full ">
+            <NavSearch />
           </div>
 
           <NavLinks

@@ -1,6 +1,6 @@
 import React from 'react'
 import Image from 'next/image'
-
+import Link from 'next/link'
 function Footer() {
     return (
         <div className='footer-section bg-gray-800 text-white py-6 mt-10 '>
@@ -27,9 +27,9 @@ function Footer() {
                     </div>
                     <div className='flex flex-col gap-2 text-center md:text-left'>
                         <p className='font-bold'>Follow Us</p>
-                        <p>Facebook</p>
-                        <p>Twitter</p>
-                        <p>Instagram</p>
+                        <p><Link href={"#"}>Facebook</Link></p>
+                        <p><Link href={"#"}>Twitter</Link></p>
+                        <p><Link href={"#"}>Instagram</Link></p>
                     </div>
                 </div>
             </div>

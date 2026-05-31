@@ -40,7 +40,7 @@ function page() {
             </p>
           </div>
 
-          <div className="bg-background flex items-center space-x-3 self-end sm:self-auto">
+          <div className="bg-background flex flex-col sm:flex-row gap-3 w-full sm:w-auto self-end sm:self-auto">
             {/* Search Input Placeholder */}
             <div className="relative">
               <input
