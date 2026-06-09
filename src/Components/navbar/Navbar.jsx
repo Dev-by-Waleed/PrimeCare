@@ -7,7 +7,6 @@ import NavLinks from './NavLinks';
 import NavSearch from './NavSearch';
 import { OffCanvasContext } from '@/Context/canvas';
 import { CartContext } from '@/Context/cart';
-import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function Navbar() {
   const { isOpenCanvas, setOpenCanvas } = useContext(OffCanvasContext);
@@ -37,7 +36,7 @@ export default function Navbar() {
           <Link href="/login" className="text-sm text-foreground hover:text-green-500">
             Login
           </Link>
-          <Link href="/register" className="text-sm bg-green-500 px-4 py-1.5 rounded text-white hover:bg-green-600 transition-colors">
+          <Link href="/sign-up" className="text-sm bg-green-500 px-4 py-1.5 rounded text-white hover:bg-green-600 transition-colors">
             Register
           </Link>
         </div>

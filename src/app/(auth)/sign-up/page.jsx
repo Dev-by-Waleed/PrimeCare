@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, Leaf, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import supabase from '@/Config/Supabase';
 
@@ -51,7 +52,7 @@ export default function page() {
     }
 
     try {
-      // Supabase Authentication Signup
+      // 1. Supabase Authentication Signup
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -63,6 +64,23 @@ export default function page() {
       });
 
       if (signUpError) throw signUpError;
+
+      // 2. Create the Role Profile in the Database
+      if (data?.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            { 
+              id: data.user.id, 
+              role: 'customer' // Automatically assigns 'customer'
+            }
+          ]);
+
+        if (profileError) {
+          console.error("Profile creation error:", profileError.message);
+          throw new Error("Account created, but profile setup failed.");
+        }
+      }
 
       // Success State
       setSuccess(true);
@@ -82,9 +100,9 @@ export default function page() {
       
       {/* ================= BRAND LOGO ================= */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center mb-6">
-        <div className="w-14 h-14 bg-[#00b207] rounded-full flex items-center justify-center shadow-md shadow-[#00b207]/20 mb-4">
-          <Leaf size={28} className="text-white" />
-        </div>
+       <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-md shadow-[#00b207]/20 mb-4">
+                 <Image src="/logo.png" alt="PrimeCare Logo" width={100} height={50} />
+               </div>
         <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
           Create an Account
         </h2>

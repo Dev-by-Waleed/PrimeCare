@@ -4,43 +4,50 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import supabase from '@/Config/Supabase';
 
-export default function ProtectedRoute({ children }) {
-    const router = useRouter();
-    const [isAuthorized, setIsAuthorized] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+export default function ProtectedRoute({ children, adminOnly = false }) {
+  const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            // Check current session
-            const { data: { session } } = await supabase.auth.getSession();
+  useEffect(() => {
+    const checkAuth = async () => {
+      // 1. Get the current user
+      const { data: { session } } = await supabase.auth.getSession();
 
-            if (!session) {
-                // Not logged in? Kick them to the login page
-                router.push('/login');
-            } else {
-                // Logged in? Let them see the page
-                setIsAuthorized(true);
-            }
-            setIsLoading(false);
-        };
+      if (!session) {
+        router.push('/login');
+        return;
+      }
 
-        checkAuth();
-    }, [router]);
+      // 2. If we need to check for Admin role
+      if (adminOnly) {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
 
-    // Show a loading spinner while checking to prevent a "flash" of the protected page
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#f9f9f9]">
-                <Loader2 size={40} className="animate-spin text-[#00b207]" />
-            </div>
-        );
-    }
+        if (error || profile?.role !== 'admin') {
+          router.push('/'); // Kick them out if not admin
+          return;
+        }
+      }
 
-    // If authorized, render the actual page content
-    if (isAuthorized) {
-        return <>{children}</>;
-    }
+      // 3. Passed all checks
+      setIsAuthorized(true);
+      setIsLoading(false);
+    };
 
-    // Fallback (usually won't be seen because of the redirect)
-    return null;
+    checkAuth();
+  }, [router, adminOnly]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 size={40} className="animate-spin text-[#00b207]" />
+      </div>
+    );
+  }
+
+  return <>{children}</>;
 }

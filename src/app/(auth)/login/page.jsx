@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Leaf, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import supabase from '@/Config/Supabase';
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -56,11 +58,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#f9f9f9] flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans text-[#1a1a1a] antialiased">
-      
+
       {/* ================= BRAND LOGO ================= */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center mb-6">
-        <div className="w-14 h-14 bg-[#00b207] rounded-full flex items-center justify-center shadow-md shadow-[#00b207]/20 mb-4">
-          <Leaf size={28} className="text-white" />
+        <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-md shadow-[#00b207]/20 mb-4">
+          <Image src="/logo.png" alt="PrimeCare Logo" width={100} height={50} />
         </div>
         <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
           Welcome back
@@ -73,7 +75,7 @@ export default function LoginPage() {
       {/* ================= LOGIN CARD ================= */}
       <div className="sm:mx-auto sm:w-full sm:max-w-[450px]">
         <div className="bg-white py-10 px-8 shadow-sm border border-gray-100 rounded-3xl sm:px-10">
-          
+
           {/* Status Message */}
           {error && (
             <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3">
@@ -83,7 +85,7 @@ export default function LoginPage() {
           )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            
+
             {/* Email Input */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
@@ -191,10 +193,6 @@ export default function LoginPage() {
                 <img className="h-5 w-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
                 Google
               </button>
-              <button className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-200 rounded-full bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                <img className="h-5 w-5 mr-2" src="https://www.svgrepo.com/show/475647/apple.svg" alt="Apple" />
-                Apple
-              </button>
             </div>
           </div>
 
@@ -203,7 +201,7 @@ export default function LoginPage() {
         {/* ================= BOTTOM REGISTRATION LINK ================= */}
         <p className="mt-8 text-center text-sm text-gray-600">
           Don't have an account yet?{' '}
-          <Link href="/register" className="font-bold text-[#00b207] hover:text-[#009906] transition-colors hover:underline">
+          <Link href="/sign-up" className="font-bold text-[#00b207] hover:text-[#009906] transition-colors hover:underline">
             Create an Account
           </Link>
         </p>
