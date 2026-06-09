@@ -56,6 +56,34 @@ export default function LoginPage() {
     }
   };
 
+  // Improved Google Sign-In Logic
+  const signInWithGoogle = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Dynamically get current site URL so it works in both local development and production environments
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (oauthError) throw oauthError;
+
+    } catch (err) {
+      setError(err.message || "Failed to sign in with Google.");
+      setIsLoading(false); // Only turn off loading if the redirection failed
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f9f9f9] flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans text-[#1a1a1a] antialiased">
 
@@ -104,7 +132,8 @@ export default function LoginPage() {
                   placeholder="you@example.com"
                   value={formData.email}
                   onChange={handleChange}
-                  className="block w-full pl-11 pr-4 py-3.5 border border-gray-200 rounded-full text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#00b207] focus:border-[#00b207] transition-colors bg-gray-50/50 focus:bg-white"
+                  disabled={isLoading}
+                  className="block w-full pl-11 pr-4 py-3.5 border border-gray-200 rounded-full text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#00b207] focus:border-[#00b207] transition-colors bg-gray-50/50 focus:bg-white disabled:opacity-60"
                 />
               </div>
             </div>
@@ -127,7 +156,8 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full pl-11 pr-4 py-3.5 border border-gray-200 rounded-full text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#00b207] focus:border-[#00b207] transition-colors bg-gray-50/50 focus:bg-white"
+                  disabled={isLoading}
+                  className="block w-full pl-11 pr-4 py-3.5 border border-gray-200 rounded-full text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#00b207] focus:border-[#00b207] transition-colors bg-gray-50/50 focus:bg-white disabled:opacity-60"
                 />
               </div>
             </div>
@@ -141,6 +171,7 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={formData.rememberMe}
                   onChange={handleChange}
+                  disabled={isLoading}
                   className="h-4 w-4 text-[#00b207] focus:ring-[#00b207] border-gray-300 rounded cursor-pointer accent-[#00b207]"
                 />
                 <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-600 cursor-pointer">
@@ -189,8 +220,16 @@ export default function LoginPage() {
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-4">
-              <button className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-200 rounded-full bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                <img className="h-5 w-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
+              <button 
+                onClick={signInWithGoogle} 
+                disabled={isLoading}
+                className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-200 rounded-full bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <Loader2 size={18} className="animate-spin mr-2 text-gray-400" />
+                ) : (
+                  <img className="h-5 w-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
+                )}
                 Google
               </button>
             </div>
