@@ -5,7 +5,7 @@ import { ArrowRight, Van, Headset, Handbag, Package } from 'lucide-react';
 function HeroSection() {
     return (
         // Added a container to keep it nicely centered with some padding
-        <div className="bg-background w-full max-w-[1200px] mx-auto p-4">
+        <div className="bg-background w-full max-w-[1200px] mx-auto p-4 mt-10 rounded-lg">
             {/* GRID CONTAINER: 
         - grid-cols-1: 1 column on mobile (stack vertically)
         - md:grid-cols-3: 3 columns on medium screens and up

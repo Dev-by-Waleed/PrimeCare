@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback, useContext } from 'react';
 import Image from 'next/image';
 import supabase from '@/Config/Supabase';
-import { Star, Heart, Eye, ShoppingBag, Minus, Plus, Check, Play } from 'lucide-react';
+import { Star, Heart, Eye, ShoppingBag, Minus, Plus, Check } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { CartContext } from '@/Context/cart';
 
@@ -17,6 +17,10 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('descriptions');
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Wishlist State
+  const [user, setUser] = useState(null)
+  const [wishlistIds, setWishlistIds] = useState([]) 
 
   // Fetch Data Callback
   const fetchProductData = useCallback(async () => {
@@ -51,6 +55,50 @@ export default function ProductPage() {
     }
   }, [slug]);
 
+  // Check Login Status & Fetch Wishlist
+  const checkAuthAndWishlist = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user) {
+        setUser(session.user)
+        
+        const { data, error } = await supabase
+            .from('wishlist_items')
+            .select('product_id')
+            .eq('user_id', session.user.id)
+            
+        if (data) {
+            setWishlistIds(data.map(item => item.product_id))
+        }
+    }
+  }
+
+  // Toggle Wishlist Function
+  const toggleWishlist = async (event, productId) => {
+    event.stopPropagation() // Stops click bubbling
+
+    if (!user) {
+        alert("Please log in to save items to your wishlist!")
+        return
+    }
+
+    const isWishlisted = wishlistIds.includes(productId)
+
+    if (isWishlisted) {
+        // Optimistic Remove
+        setWishlistIds(wishlistIds.filter(id => id !== productId))
+        await supabase
+            .from('wishlist_items')
+            .delete()
+            .match({ user_id: user.id, product_id: productId })
+    } else {
+        // Optimistic Add
+        setWishlistIds([...wishlistIds, productId])
+        await supabase
+            .from('wishlist_items')
+            .insert({ user_id: user.id, product_id: productId })
+    }
+  }
+
   // Add to Cart 
   const AddtoCart = (event, productData) => {
     event.stopPropagation()
@@ -64,6 +112,7 @@ export default function ProductPage() {
   // Trigger Fetch
   useEffect(() => {
     fetchProductData();
+    checkAuthAndWishlist();
   }, [fetchProductData]);
 
   // Loading Screen Fallback
@@ -94,6 +143,9 @@ export default function ProductPage() {
   const finalPrice = productDetails.discount > 0
     ? (productDetails.price - (productDetails.price * (productDetails.discount / 100))).toFixed(2)
     : productDetails.price.toFixed(2);
+
+  // Check if main product is saved
+  const isMainProductSaved = wishlistIds.includes(productDetails.id);
 
   return (
     <div className="min-h-screen font-sans text-[#1a1a1a] antialiased">
@@ -202,7 +254,7 @@ export default function ProductPage() {
                 </div>
 
                 <button
-                  onClick={() => { AddtoCart(event, productDetails) }}
+                  onClick={(event) => { AddtoCart(event, productDetails) }}
                   disabled={!productDetails.status}
                   className="flex-1 w-full flex items-center justify-center gap-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-8 rounded-full shadow-md shadow-[#00b207]/10 transition-colors"
                 >
@@ -210,8 +262,13 @@ export default function ProductPage() {
                   <ShoppingBag size={18} />
                 </button>
 
-                <button aria-label="Add to wishlist" className="p-3.5 border border-gray-200 rounded-full hover:bg-gray-50 text-text-muted hover:text-green-500 transition-all shadow-sm group">
-                  <Heart size={20} className="group-hover:fill-[#00b207]/20" />
+                {/* UPDATED HEART BUTTON (MAIN PRODUCT) */}
+                <button 
+                  onClick={(e) => toggleWishlist(e, productDetails.id)}
+                  aria-label="Add to wishlist" 
+                  className={`p-3.5 border border-gray-200 rounded-full hover:bg-gray-50 transition-all shadow-sm group ${isMainProductSaved ? 'text-red-500' : 'text-text-muted hover:text-red-500'}`}
+                >
+                  <Heart size={20} className={isMainProductSaved ? 'fill-red-500' : 'group-hover:fill-red-500/20'} />
                 </button>
               </div>
             </div>
@@ -245,8 +302,8 @@ export default function ProductPage() {
 
           {/* Dynamic Tab Body Container */}
           {activeTab === 'descriptions' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-              {/* Left: Full Description */}
+            <div className="max-w-4xl mx-auto">
+              {/* Full Description Centered & Wide */}
               <div className="space-y-5 text-sm text-text-muted leading-relaxed whitespace-pre-line">
                 {productDetails.desc}
 
@@ -267,42 +324,6 @@ export default function ProductPage() {
                   ))}
                 </ul>
               </div>
-
-              {/* Right Side Video/Banner Overlay Panel */}
-              <div className="space-y-4">
-                <div className="relative rounded-2xl overflow-hidden aspect-video bg-gray-100 group shadow-sm">
-                  <Image
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=60"
-                    alt="Promo clip thumbnail"
-                    width={500}
-                    height={500}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                    <button aria-label="Play promo video" className="w-14 h-14 bg-green-500 text-white flex items-center justify-center rounded-full shadow-lg shadow-[#00b207]/30 transform group-hover:scale-110 transition-transform">
-                      <Play size={20} fill="currentColor" className="ml-0.5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Info Badges Subgroup */}
-                <div className="grid grid-cols-2 gap-4 border border-gray-100 rounded-xl p-4  shadow-xs">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-[#e6f7e7] text-green-500 rounded-xl font-bold text-sm">%</div>
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground">64% Discount</h4>
-                      <p className="text-xs text-gray-400">Save your 64% money with us</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 border-l border-gray-100 pl-4">
-                    <div className="p-3 bg-[#e6f7e7] text-green-500 rounded-xl text-sm">🌱</div>
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground">100% Organic</h4>
-                      <p className="text-xs text-gray-400">100% Organic Vegetables</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
         </div>
@@ -317,6 +338,9 @@ export default function ProductPage() {
                 const itemFinalPrice = product.discount > 0
                   ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
                   : product.price.toFixed(2);
+                
+                // Check if this related product is saved
+                const isRelatedSaved = wishlistIds.includes(product.id);
 
                 return (
                   <div
@@ -333,8 +357,13 @@ export default function ProductPage() {
 
                     {/* Hover Actions */}
                     <div className="absolute top-3 right-3 flex flex-col gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button aria-label="Add to wishlist" className="p-2 bg-white border border-gray-100 rounded-full text-text-muted hover:bg-green-500 hover:text-white hover:border-[#00b207] shadow-sm transition-all">
-                        <Heart size={14} />
+                      {/* UPDATED HEART BUTTON (RELATED PRODUCTS) */}
+                      <button 
+                        onClick={(e) => toggleWishlist(e, product.id)}
+                        aria-label="Add to wishlist" 
+                        className="p-2 bg-white border border-gray-100 rounded-full text-text-muted hover:bg-green-500 hover:text-white hover:border-[#00b207] shadow-sm transition-all flex items-center justify-center"
+                      >
+                        <Heart size={14} className={isRelatedSaved ? "text-red-500 fill-red-500 group-hover:text-white group-hover:fill-white" : ""} />
                       </button>
                       <button aria-label="Quick view" className="p-2 bg-white border border-gray-100 rounded-full text-text-muted hover:bg-green-500 hover:text-white hover:border-[#00b207] shadow-sm transition-all">
                         <Eye size={14} />
@@ -368,7 +397,6 @@ export default function ProductPage() {
                         <button
                           aria-label="Add to Cart"
                           onClick={(event) => { AddtoCart(event, product) }}
-                          // Handle Add to cart logic here
                           className="w-8 h-8 flex items-center justify-center rounded-full text-text-muted hover:bg-green-500 hover:text-white transition-colors"
                         >
                           <ShoppingBag size={14} />

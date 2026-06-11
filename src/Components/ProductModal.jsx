@@ -16,6 +16,8 @@ const ProductModal = ({ isModalOpen, closeModal }) => {
         productImg: Yup.string().nullable()
             .transform((_, value) => (value === "" ? null : value)),
         category: Yup.string().required('Category is required'),
+        brand:Yup.string().nullable()
+            .transform((_, value) => (value === "" ? null : value)),
     });
 
     const formik = useFormik({
@@ -29,6 +31,7 @@ const ProductModal = ({ isModalOpen, closeModal }) => {
             productImg: '',
             category: '',
             dealTag: 'none',
+            brand: '',
             status: true,
         },
         validationSchema: ProductSchema,
@@ -186,6 +189,19 @@ const ProductModal = ({ isModalOpen, closeModal }) => {
                                                 <p className="text-red-500 text-xs mt-1">{formik.errors.stockQty}</p>
                                             ) : (
                                                 <p className="text-gray-500 text-xs mt-1">Current inventory level.</p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
+                                            <input
+                                                type="text"
+                                                id="brand"
+                                                {...formik.getFieldProps('brand')}
+                                                placeholder="none"
+                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#00B207] focus:border-[#00B207]"
+                                            />
+                                            {formik.touched.brand && formik.errors.brand && (
+                                                <p className="text-red-500 text-xs mt-1">{formik.errors.brand}</p>
                                             )}
                                         </div>
                                     </div>

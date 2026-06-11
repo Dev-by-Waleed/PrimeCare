@@ -1,18 +1,37 @@
 "use client"
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, Handbag, Phone, Menu, X } from 'lucide-react';
+import { Heart, Handbag, Phone, Menu, X, LogOut } from 'lucide-react';
 import NavLinks from './NavLinks';
 import NavSearch from './NavSearch';
 import { OffCanvasContext } from '@/Context/canvas';
 import { CartContext } from '@/Context/cart';
+import supabase from '@/Config/Supabase'; // <-- Added Supabase import
 
 export default function Navbar() {
   const { isOpenCanvas, setOpenCanvas } = useContext(OffCanvasContext);
   const { cartItems } = useContext(CartContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // 1. Added State for Auth
+  const [session, setSession] = useState(null);
 
+  // 2. Listen for Login/Logout events
+  useEffect(() => {
+    // Get the current session on load
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Listen for any auth changes (login, logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    // Cleanup subscription on unmount
+    return () => subscription.unsubscribe();
+  }, []);
 
   // 3. Helper to calculate total price
   const getSubTotal = () => {
@@ -26,6 +45,11 @@ export default function Navbar() {
     return cartItems?.reduce((acc, item) => acc + item.quantity, 0) || 0;
   };
 
+  // 5. Logout Function
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    // The onAuthStateChange listener will automatically update the UI!
+  };
 
   return (
     <nav className=" z-50 w-full border-b">
@@ -33,12 +57,32 @@ export default function Navbar() {
       <div className="sticky top-0 hidden md:flex text-foreground py-2 px-4 justify-between items-center mx-auto max-w-7xl border-b">
         <p className="text-sm">Store Location: Lincoln- 344, Illinois, Chicago, USA</p>
         <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm text-foreground hover:text-green-500">
-            Login
-          </Link>
-          <Link href="/sign-up" className="text-sm bg-green-500 px-4 py-1.5 rounded text-white hover:bg-green-600 transition-colors">
-            Register
-          </Link>
+          
+          {/* CONDITIONAL RENDERING: Login/Register vs Logout */}
+          {session ? (
+            <div className="flex items-center gap-4">
+               <Link href="/profile" className="text-sm font-medium text-green-600 hover:underline">
+                 My Profile
+               </Link>
+               <button 
+                 onClick={handleLogout} 
+                 className="flex items-center gap-1 text-sm bg-gray-100 px-4 py-1.5 rounded text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+               >
+                 <LogOut size={14} />
+                 Logout
+               </button>
+            </div>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm text-foreground hover:text-green-500">
+                Login
+              </Link>
+              <Link href="/sign-up" className="text-sm bg-green-500 px-4 py-1.5 rounded text-white hover:bg-green-600 transition-colors">
+                Register
+              </Link>
+            </>
+          )}
+
         </div>
       </div>
 
@@ -73,7 +117,7 @@ export default function Navbar() {
 
           <div className="w-px h-6 bg-gray-300" />
 
-          {/* UPDATED: Cart Section */}
+          {/* Cart Section */}
           <div
             onClick={() => setOpenCanvas(!isOpenCanvas)}
             className="flex items-center gap-3 group cursor-pointer"
@@ -81,7 +125,6 @@ export default function Navbar() {
             <div className="relative">
               <Handbag className="text-text-muted group-hover:text-green-500 transition-colors" size={24} />
 
-              {/* Added a notification badge for item quantity */}
               {getTotalItems() > 0 && (
                 <span className="absolute -top-2 -right-2 bg-green-500 text-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {getTotalItems()}
@@ -91,7 +134,6 @@ export default function Navbar() {
 
             <div>
               <p className="text-text-muted text-sm">Shopping cart:</p>
-              {/* Wired up the dynamic subtotal */}
               <p className="font-bold text-foreground group-hover:text-green-500 transition-colors">
                 ${getSubTotal().toFixed(2)}
               </p>
@@ -130,6 +172,28 @@ export default function Navbar() {
           <div className="flex items-center gap-2 pt-4 border-t border-zinc-700">
             <Phone size={20} />
             <p>(219) 555-0114</p>
+          </div>
+          
+          {/* Mobile Auth Links */}
+          <div className="flex flex-col gap-3 pt-4 border-t border-zinc-700">
+            {session ? (
+               <button 
+                 onClick={handleLogout} 
+                 className="flex items-center justify-center gap-2 w-full py-2 bg-red-500 text-white rounded hover:bg-red-600"
+               >
+                 <LogOut size={18} />
+                 Logout
+               </button>
+            ) : (
+              <>
+                <Link href="/login" onClick={() => setIsMenuOpen(false)} className="w-full text-center py-2 border border-green-500 text-green-400 rounded">
+                  Login
+                </Link>
+                <Link href="/sign-up" onClick={() => setIsMenuOpen(false)} className="w-full text-center py-2 bg-green-500 text-white rounded">
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

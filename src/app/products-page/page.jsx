@@ -16,6 +16,10 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
 
+  // Wishlist State
+  const [user, setUser] = useState(null);
+  const [wishlistIds, setWishlistIds] = useState([]);
+
   // Sample Categories (You can fetch these dynamically from Supabase too)
   const categories = ["All", "Vegetables", "Fruits", "Meat", "Dairy", "Bakery"];
 
@@ -39,7 +43,52 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
+    checkAuthAndWishlist(); // Trigger auth/wishlist check on mount
   }, []);
+
+  // Check Login Status & Fetch Wishlist
+  const checkAuthAndWishlist = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+        setUser(session.user);
+        
+        const { data, error } = await supabase
+            .from('wishlist_items')
+            .select('product_id')
+            .eq('user_id', session.user.id);
+            
+        if (data) {
+            setWishlistIds(data.map(item => item.product_id));
+        }
+    }
+  };
+
+  // Toggle Wishlist Function
+  const toggleWishlist = async (event, productId) => {
+    event.stopPropagation(); // Stops click bubbling
+
+    if (!user) {
+        alert("Please log in to save items to your wishlist!");
+        return;
+    }
+
+    const isWishlisted = wishlistIds.includes(productId);
+
+    if (isWishlisted) {
+        // Optimistic Remove
+        setWishlistIds(wishlistIds.filter(id => id !== productId));
+        await supabase
+            .from('wishlist_items')
+            .delete()
+            .match({ user_id: user.id, product_id: productId });
+    } else {
+        // Optimistic Add
+        setWishlistIds([...wishlistIds, productId]);
+        await supabase
+            .from('wishlist_items')
+            .insert({ user_id: user.id, product_id: productId });
+    }
+  };
 
   // Add to Cart Logic
   const AddtoCart = (event, productData) => {
@@ -61,7 +110,7 @@ export default function ProductsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-blue"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
       </div>
     );
   }
@@ -121,6 +170,9 @@ export default function ProductsPage() {
               const itemFinalPrice = product.discount > 0
                 ? (product.price - (product.price * (product.discount / 100))).toFixed(2)
                 : product.price.toFixed(2);
+                
+              // Check if this specific product is in the user's wishlist
+              const isSaved = wishlistIds.includes(product.id);
 
               return (
                 <div
@@ -144,12 +196,13 @@ export default function ProductsPage() {
 
                   {/* Hover Actions */}
                   <div className="absolute top-3 right-3 flex flex-col gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {/* UPDATED HEART BUTTON */}
                     <button 
-                      aria-label="Add to wishlist" 
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-2 bg-side-background border border-border-ui rounded-full text-text-muted hover:bg-green-500 hover:text-white hover:border-brand-blue shadow-sm transition-all"
+                      aria-label={isSaved ? "Remove from wishlist" : "Add to wishlist"}
+                      onClick={(e) => toggleWishlist(e, product.id)}
+                      className="p-2 bg-side-background border border-border-ui rounded-full text-text-muted hover:bg-green-500 hover:text-white hover:border-brand-blue shadow-sm transition-all flex items-center justify-center"
                     >
-                      <Heart size={14} />
+                      <Heart size={14} className={isSaved ? "text-red-500 fill-red-500 group-hover:text-white group-hover:fill-white" : ""} />
                     </button>
                     <button 
                       aria-label="Quick view" 
