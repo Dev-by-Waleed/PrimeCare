@@ -5,6 +5,7 @@ import supabase from '@/Config/Supabase'
 import { Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { CartContext } from '@/Context/cart'
+import toast from 'react-hot-toast' // Added hot-toast import
 
 function ProductsSection() {
     const [products, setProducts] = useState([])
@@ -26,6 +27,7 @@ function ProductsSection() {
             setProducts(data)
         } else if (error) {
             console.error("Error fetching products:", error)
+            toast.error("Failed to load products.") // Added error toast
         }
     }
 
@@ -54,7 +56,7 @@ function ProductsSection() {
         event.stopPropagation() // Stops the click from redirecting to the product page
 
         if (!user) {
-            alert("Please log in to save items to your wishlist!")
+            toast.error("Please log in to save items to your wishlist!") // Replaced alert with toast
             return
         }
 
@@ -62,30 +64,52 @@ function ProductsSection() {
 
         if (isWishlisted) {
             // OPTIMISTIC UI: Remove from local state immediately
-            setWishlistIds(wishlistIds.filter(id => id !== productId))
+            setWishlistIds(prev => prev.filter(id => id !== productId))
             
             // Remove from Supabase
-            await supabase
+            const { error } = await supabase
                 .from('wishlist_items')
                 .delete()
                 .match({ user_id: user.id, product_id: productId })
+
+            if (error) {
+                // Revert if database fails
+                setWishlistIds(prev => [...prev, productId])
+                toast.error("Failed to remove from wishlist.")
+            } else {
+                toast.success("Removed from wishlist")
+            }
         } else {
             // OPTIMISTIC UI: Add to local state immediately
-            setWishlistIds([...wishlistIds, productId])
+            setWishlistIds(prev => [...prev, productId])
             
             // Add to Supabase
-            await supabase
+            const { error } = await supabase
                 .from('wishlist_items')
                 .insert({ user_id: user.id, product_id: productId })
+
+            if (error) {
+                // Revert if database fails
+                setWishlistIds(prev => prev.filter(id => id !== productId))
+                toast.error("Failed to add to wishlist.")
+            } else {
+                toast.success("Added to wishlist")
+            }
         }
     }
 
     const addToCart = (event, productData) => {
         event.stopPropagation()
-        dispatch({
-            type: "addProduct",
-            payload: productData // Standardized to match the reducer's action.payload
-        })
+        try {
+            dispatch({
+                type: "addProduct",
+                payload: productData // Standardized to match the reducer's action.payload
+            })
+            // Added success toast for cart
+            toast.success(`${productData?.productName || 'Item'} added to cart!`)
+        } catch (error) {
+            toast.error("Failed to add item to cart.")
+        }
     }
 
     return (

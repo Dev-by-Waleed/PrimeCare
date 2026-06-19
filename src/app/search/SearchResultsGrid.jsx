@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import { ShoppingBag, Heart, Eye, Search } from 'lucide-react';
 import { CartContext } from '@/Context/cart';
 import supabase from '@/Config/Supabase';
+import toast from 'react-hot-toast';
 
 export default function SearchResultsGrid({ products, searchQuery }) {
-    const router = useRouter();
+  const router = useRouter();
     const { dispatch } = useContext(CartContext);
 
-    // Wishlist State (Reused from your ProductsPage)
+    // Wishlist State 
     const [user, setUser] = useState(null);
     const [wishlistIds, setWishlistIds] = useState([]);
 
@@ -36,8 +37,12 @@ export default function SearchResultsGrid({ products, searchQuery }) {
     // Toggle Wishlist Function
     const toggleWishlist = async (event, productId) => {
         event.stopPropagation();
+        
         if (!user) {
-            alert("Please log in to save items to your wishlist!");
+            // Replaced alert() with a hot-toast warning
+            toast.error("Please log in to save items to your wishlist!", {
+                duration: 4000,
+            });
             return;
         }
 
@@ -46,9 +51,11 @@ export default function SearchResultsGrid({ products, searchQuery }) {
         if (isWishlisted) {
             setWishlistIds(wishlistIds.filter(id => id !== productId));
             await supabase.from('wishlist_items').delete().match({ user_id: user.id, product_id: productId });
+            toast.success("Removed from wishlist");
         } else {
             setWishlistIds([...wishlistIds, productId]);
             await supabase.from('wishlist_items').insert({ user_id: user.id, product_id: productId });
+            toast.success("Added to wishlist");
         }
     };
 
@@ -56,6 +63,9 @@ export default function SearchResultsGrid({ products, searchQuery }) {
     const AddtoCart = (event, productData) => {
         event.stopPropagation();
         dispatch({ type: "addProduct", payload: { ...productData, quantity: 1 } });
+        
+        // Success Toast Notification
+        toast.success(`${productData.name || 'Item'} added to cart!`);
     };
 
     // Empty State

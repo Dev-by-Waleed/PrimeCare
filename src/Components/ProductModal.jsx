@@ -2,6 +2,7 @@ import React from 'react'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import supabase from '@/Config/Supabase';
+import toast from 'react-hot-toast';
 
 const ProductModal = ({ isModalOpen, closeModal }) => {
 
@@ -16,7 +17,7 @@ const ProductModal = ({ isModalOpen, closeModal }) => {
         productImg: Yup.string().nullable()
             .transform((_, value) => (value === "" ? null : value)),
         category: Yup.string().required('Category is required'),
-        brand:Yup.string().nullable()
+        brand: Yup.string().nullable()
             .transform((_, value) => (value === "" ? null : value)),
     });
 
@@ -36,6 +37,7 @@ const ProductModal = ({ isModalOpen, closeModal }) => {
         },
         validationSchema: ProductSchema,
         onSubmit: async (values, { resetForm, setSubmitting }) => {
+            setSubmitting(true);
             // 1. Separate dealTag from the rest of the data
             const { dealTag, ...restData } = values;
 
@@ -46,20 +48,25 @@ const ProductModal = ({ isModalOpen, closeModal }) => {
                 isBestseller: dealTag === 'best-seller',
             };
 
-            // 3. Insert into Supabase
-            const { data, error } = await supabase.from('products').insert(payload);
+            try {
+                // 3. Insert into Supabase
+                const { error } = await supabase.from('products').insert(payload);
 
-            if (error) {
-                console.error('Error inserting product:', error.message);
-                // Consider adding a toast notification here for the user
-            } else {
-                console.log('Product inserted successfully:', data);
+                if (error) throw error;
+
+                // 4. Success handling
+                toast.success('Product added successfully!');
                 resetForm();
                 closeModal();
+            } catch (error) {
+                // 5. Error handling
+                console.error('Error inserting product:', error.message);
+                toast.error(`Failed to add product: ${error.message}`);
+            } finally {
+                setSubmitting(false);
             }
-
-            setSubmitting(false);
         }
+
     });
 
     // Return null if modal is not open to completely unmount it from the DOM

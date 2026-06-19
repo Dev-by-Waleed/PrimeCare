@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Lock, User, Leaf, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,6 +8,16 @@ import supabase from '@/Config/Supabase';
 
 export default function page() {
   const router = useRouter();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push('/'); // Redirect to home if already logged in
+      }
+    };
+    checkUser();
+  }, [router]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -70,8 +80,8 @@ export default function page() {
         const { error: profileError } = await supabase
           .from('profiles')
           .insert([
-            { 
-              id: data.user.id, 
+            {
+              id: data.user.id,
               role: 'customer' // Automatically assigns 'customer'
             }
           ]);
@@ -84,9 +94,8 @@ export default function page() {
 
       // Success State
       setSuccess(true);
-      
-      // Optional: Auto-redirect after 3 seconds
-      // setTimeout(() => router.push('/login'), 3000);
+      toast.success("Account created successfully! Please log in.");
+      setTimeout(() => router.push('/login'), 3000);
 
     } catch (err) {
       setError(err.message || "An error occurred during registration.");
@@ -97,12 +106,12 @@ export default function page() {
 
   return (
     <div className="min-h-screen bg-[#f9f9f9] flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans text-[#1a1a1a] antialiased">
-      
+
       {/* ================= BRAND LOGO ================= */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center mb-6">
-       <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-md shadow-[#00b207]/20 mb-4">
-                 <Image src="/logo.png" alt="PrimeCare Logo" width={100} height={50} />
-               </div>
+        <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-md shadow-[#00b207]/20 mb-4">
+          <Image src="/logo.png" alt="PrimeCare Logo" width={100} height={50} />
+        </div>
         <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
           Create an Account
         </h2>
@@ -114,7 +123,7 @@ export default function page() {
       {/* ================= REGISTER CARD ================= */}
       <div className="sm:mx-auto sm:w-full sm:max-w-[500px]">
         <div className="bg-white py-10 px-8 shadow-sm border border-gray-100 rounded-3xl sm:px-10">
-          
+
           {/* Status Messages */}
           {error && (
             <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3">
@@ -139,7 +148,7 @@ export default function page() {
           {/* Form */}
           {!success && (
             <form className="space-y-5" onSubmit={handleSubmit}>
-              
+
               {/* Full Name Input */}
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">

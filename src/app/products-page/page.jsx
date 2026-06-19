@@ -5,6 +5,7 @@ import supabase from '@/Config/Supabase';
 import { ShoppingBag, Heart, Eye, Search, SlidersHorizontal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { CartContext } from '@/Context/cart';
+import toast from 'react-hot-toast'; // Import toast
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function ProductsPage() {
   const [user, setUser] = useState(null);
   const [wishlistIds, setWishlistIds] = useState([]);
 
-  // Sample Categories (You can fetch these dynamically from Supabase too)
+  // Sample Categories
   const categories = ["All", "Vegetables", "Fruits", "Meat", "Dairy", "Bakery"];
 
   // Fetch All Products
@@ -37,66 +38,102 @@ export default function ProductsPage() {
         setProducts(data || []);
       } catch (error) {
         console.error("Error fetching products:", error.message);
+        toast.error("Failed to load products."); // Added error feedback
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProducts();
-    checkAuthAndWishlist(); // Trigger auth/wishlist check on mount
+    checkAuthAndWishlist();
   }, []);
 
   // Check Login Status & Fetch Wishlist
   const checkAuthAndWishlist = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
+    try {
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError) throw authError;
+
+      if (session?.user) {
         setUser(session.user);
         
-        const { data, error } = await supabase
+        const { data, error: wishlistError } = await supabase
             .from('wishlist_items')
             .select('product_id')
             .eq('user_id', session.user.id);
             
+        if (wishlistError) throw wishlistError;
+
         if (data) {
             setWishlistIds(data.map(item => item.product_id));
         }
+      }
+    } catch (error) {
+      console.error("Error fetching auth/wishlist:", error.message);
     }
   };
 
-  // Toggle Wishlist Function
+  // Toggle Wishlist Function (Improved with Rollback)
   const toggleWishlist = async (event, productId) => {
     event.stopPropagation(); // Stops click bubbling
 
     if (!user) {
-        alert("Please log in to save items to your wishlist!");
+        toast.error("Please log in to save items to your wishlist!");
         return;
     }
 
     const isWishlisted = wishlistIds.includes(productId);
 
+    // 1. Optimistic UI Update (Instant feedback)
     if (isWishlisted) {
-        // Optimistic Remove
-        setWishlistIds(wishlistIds.filter(id => id !== productId));
-        await supabase
-            .from('wishlist_items')
-            .delete()
-            .match({ user_id: user.id, product_id: productId });
+        setWishlistIds(prev => prev.filter(id => id !== productId));
     } else {
-        // Optimistic Add
-        setWishlistIds([...wishlistIds, productId]);
-        await supabase
-            .from('wishlist_items')
-            .insert({ user_id: user.id, product_id: productId });
+        setWishlistIds(prev => [...prev, productId]);
+    }
+
+    // 2. Database Operation
+    try {
+        if (isWishlisted) {
+            const { error } = await supabase
+              .from('wishlist_items')
+              .delete()
+              .match({ user_id: user.id, product_id: productId });
+            
+            if (error) throw error;
+            toast.success("Removed from wishlist");
+        } else {
+            const { error } = await supabase
+              .from('wishlist_items')
+              .insert({ user_id: user.id, product_id: productId });
+            
+            if (error) throw error;
+            toast.success("Added to wishlist");
+        }
+    } catch (error) {
+        // 3. Rollback State if DB fails
+        if (isWishlisted) {
+            setWishlistIds(prev => [...prev, productId]); // Add it back
+        } else {
+            setWishlistIds(prev => prev.filter(id => id !== productId)); // Remove it again
+        }
+        toast.error("Could not update wishlist. Please try again.");
+        console.error("Wishlist error:", error.message);
     }
   };
 
   // Add to Cart Logic
   const AddtoCart = (event, productData) => {
     event.stopPropagation();
-    dispatch({
-      type: "addProduct",
-      payload: { ...productData, quantity: 1 } // Defaulting to 1 for the catalog grid
-    });
+    try {
+        dispatch({
+          type: "addProduct",
+          payload: { ...productData, quantity: 1 } // Defaulting to 1 for the catalog grid
+        });
+        // Notify the user of success
+        toast.success(`${productData.productName || 'Item'} added to cart!`);
+    } catch (error) {
+        toast.error("Failed to add item to cart.");
+    }
   };
 
   // Filter Logic

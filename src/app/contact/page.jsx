@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { toast } from 'react-hot-toast';
 
 export default function Contact() {
   const [status, setStatus] = useState('');
@@ -24,9 +25,10 @@ export default function Contact() {
         .required('Message is required'),
     }),
     onSubmit: async (values, { resetForm }) => {
+      // Create a loading toast and save its ID
+      const toastId = toast.loading('Sending message...');
       setStatus('Sending...');
       try {
-        // Replace YOUR_FORM_ID_HERE with your Formspree/Web3Forms key
         const response = await fetch('https://formspree.io/f/xbdeybpj', {
           method: 'POST',
           headers: {
@@ -37,13 +39,18 @@ export default function Contact() {
         });
 
         if (response.ok) {
+          // Update the loading toast to a success toast
+          toast.success('Message sent successfully!', { id: toastId });
           setStatus('Message sent successfully!');
           resetForm();
         } else {
+          toast.error('Something went wrong. Please try again.', { id: toastId });
           setStatus('Something went wrong. Please try again.');
         }
       } catch (error) {
         console.error(error);
+        // Update the loading toast to an error toast
+        toast.error('Failed to send message.', { id: toastId });
         setStatus('Failed to send message.');
       }
     },
@@ -60,53 +67,53 @@ export default function Contact() {
         </p>
 
         <form onSubmit={formik.handleSubmit} className="space-y-5">
-{/* Name Field */}
-<div>
-  <label htmlFor="name" className="block text-sm font-medium text-muted"> Name </label>
-  <input
-    type="text"
-    id="name"
-    {...formik.getFieldProps('name')}
-    className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 sm:text-sm px-4 py-2 border bg-gray-50 text-gray-900 transition-colors
+          {/* Name Field */}
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-muted"> Name </label>
+            <input
+              type="text"
+              id="name"
+              {...formik.getFieldProps('name')}
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 sm:text-sm px-4 py-2 border bg-gray-50 text-gray-900 transition-colors
       ${formik.touched.name && formik.errors.name ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'}`}
-    placeholder="Your Name"
-  />
-  {formik.touched.name && formik.errors.name ? (
-    <p className="mt-1 text-xs text-red-500">{formik.errors.name}</p>
-  ) : null}
-</div>
+              placeholder="Your Name"
+            />
+            {formik.touched.name && formik.errors.name ? (
+              <p className="mt-1 text-xs text-red-500">{formik.errors.name}</p>
+            ) : null}
+          </div>
 
-{/* Email Field */}
-<div>
-  <label htmlFor="email" className="block text-sm font-medium text-muted"> Email Address </label>
-  <input
-    type="email"
-    id="email"
-    {...formik.getFieldProps('email')}
-    className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 sm:text-sm px-4 py-2 border bg-gray-50 text-gray-900 transition-colors
+          {/* Email Field */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-muted"> Email Address </label>
+            <input
+              type="email"
+              id="email"
+              {...formik.getFieldProps('email')}
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 sm:text-sm px-4 py-2 border bg-gray-50 text-gray-900 transition-colors
       ${formik.touched.email && formik.errors.email ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'}`}
-    placeholder="you@example.com"
-  />
-  {formik.touched.email && formik.errors.email ? (
-    <p className="mt-1 text-xs text-red-500">{formik.errors.email}</p>
-  ) : null}
-</div>
+              placeholder="you@example.com"
+            />
+            {formik.touched.email && formik.errors.email ? (
+              <p className="mt-1 text-xs text-red-500">{formik.errors.email}</p>
+            ) : null}
+          </div>
 
-{/* Message Field */}
-<div>
-  <label htmlFor="message" className="block text-sm font-medium text-muted"> Message </label>
-  <textarea
-    id="message"
-    rows={4}
-    {...formik.getFieldProps('message')}
-    className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 sm:text-sm px-4 py-2 border bg-gray-50 text-gray-900 transition-colors
+          {/* Message Field */}
+          <div>
+            <label htmlFor="message" className="block text-sm font-medium text-muted"> Message </label>
+            <textarea
+              id="message"
+              rows={4}
+              {...formik.getFieldProps('message')}
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 sm:text-sm px-4 py-2 border bg-gray-50 text-gray-900 transition-colors
       ${formik.touched.message && formik.errors.message ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'}`}
-    placeholder="How can I help you?"
-  />
-  {formik.touched.message && formik.errors.message ? (
-    <p className="mt-1 text-xs text-red-500">{formik.errors.message}</p>
-  ) : null}
-</div>
+              placeholder="How can I help you?"
+            />
+            {formik.touched.message && formik.errors.message ? (
+              <p className="mt-1 text-xs text-red-500">{formik.errors.message}</p>
+            ) : null}
+          </div>
 
           {/* Submit Button */}
           <button

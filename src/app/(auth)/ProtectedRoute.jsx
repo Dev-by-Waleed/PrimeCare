@@ -1,15 +1,19 @@
 "use client"
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import supabase from '@/Config/Supabase';
+import toast from 'react-hot-toast';
 
 export default function ProtectedRoute({ children, adminOnly = false }) {
   const router = useRouter();
+  const ran = useRef(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (ran.current) return;
+    ran.current = true;
     const checkAuth = async () => {
       // 1. Get the current user
       const { data: { session } } = await supabase.auth.getSession();
@@ -28,6 +32,8 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
           .single();
 
         if (error || profile?.role !== 'admin') {
+          toast.error('Unauthorized access. Admins only.');
+
           router.push('/'); // Kick them out if not admin
           return;
         }

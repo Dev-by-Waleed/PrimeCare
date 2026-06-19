@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import supabase from '@/Config/Supabase';
 import ProductModal from '@/Components/ProductModal';
+import toast from 'react-hot-toast';
 function page() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [products, setProducts] = useState([]);
@@ -19,10 +20,9 @@ function page() {
     const getProducts = async () => {
         const { data, error } = await supabase.from('products').select('*');
         if (error) {
-            console.error('Error fetching products:', error);
+            toast.error("Error fetching products: " + error.message);
         } else {
             setProducts(data);
-
         }
     }
     return (

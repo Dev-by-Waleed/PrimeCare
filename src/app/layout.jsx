@@ -5,10 +5,11 @@ import { OffCanvasProvider } from "@/Context/canvas";
 import { CartProvider } from "@/Context/cart";
 import Cart from "@/Components/Cart";
 import Footer from "@/Components/Footer";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"], 
+  subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
@@ -37,6 +38,8 @@ export default function RootLayout({ children }) {
             <Footer />
           </OffCanvasProvider>
         </CartProvider>
+        <Toaster />
+
       </body>
     </html>
   );

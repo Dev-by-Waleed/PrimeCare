@@ -5,6 +5,7 @@ import supabase from '@/Config/Supabase';
 import { Star, Heart, Eye, ShoppingBag, Minus, Plus, Check } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { CartContext } from '@/Context/cart';
+import toast from 'react-hot-toast'; // <-- Added toast
 
 export default function ProductPage() {
   const { slug } = useParams();
@@ -50,6 +51,7 @@ export default function ProductPage() {
 
     } catch (error) {
       console.error("Error fetching product data:", error.message);
+      toast.error("Could not load product data."); // <-- Added Toast
     } finally {
       setIsLoading(false);
     }
@@ -57,56 +59,80 @@ export default function ProductPage() {
 
   // Check Login Status & Fetch Wishlist
   const checkAuthAndWishlist = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session?.user) {
-        setUser(session.user)
-        
-        const { data, error } = await supabase
-            .from('wishlist_items')
-            .select('product_id')
-            .eq('user_id', session.user.id)
+    try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+            setUser(session.user)
             
-        if (data) {
-            setWishlistIds(data.map(item => item.product_id))
+            const { data, error } = await supabase
+                .from('wishlist_items')
+                .select('product_id')
+                .eq('user_id', session.user.id)
+                
+            if (error) throw error;
+            
+            if (data) {
+                setWishlistIds(data.map(item => item.product_id))
+            }
         }
+    } catch (error) {
+        console.error("Auth check failed:", error.message);
     }
   }
 
-  // Toggle Wishlist Function
+  // Toggle Wishlist Function (Improved with Optimistic UI & Rollback)
   const toggleWishlist = async (event, productId) => {
     event.stopPropagation() // Stops click bubbling
 
     if (!user) {
-        alert("Please log in to save items to your wishlist!")
+        toast.error("Please log in to save items to your wishlist!") // <-- Changed to Toast
         return
     }
 
     const isWishlisted = wishlistIds.includes(productId)
 
+    // 1. Optimistic Update (Instant UI change)
     if (isWishlisted) {
-        // Optimistic Remove
-        setWishlistIds(wishlistIds.filter(id => id !== productId))
-        await supabase
-            .from('wishlist_items')
-            .delete()
-            .match({ user_id: user.id, product_id: productId })
+        setWishlistIds(prev => prev.filter(id => id !== productId))
     } else {
-        // Optimistic Add
-        setWishlistIds([...wishlistIds, productId])
-        await supabase
-            .from('wishlist_items')
-            .insert({ user_id: user.id, product_id: productId })
+        setWishlistIds(prev => [...prev, productId])
+    }
+
+    // 2. Database Operation
+    try {
+        if (isWishlisted) {
+            const { error } = await supabase
+                .from('wishlist_items')
+                .delete()
+                .match({ user_id: user.id, product_id: productId })
+            if (error) throw error;
+            toast.success("Removed from wishlist");
+        } else {
+            const { error } = await supabase
+                .from('wishlist_items')
+                .insert({ user_id: user.id, product_id: productId })
+            if (error) throw error;
+            toast.success("Added to wishlist");
+        }
+    } catch (error) {
+        // 3. Rollback if DB fails
+        if (isWishlisted) {
+            setWishlistIds(prev => [...prev, productId]);
+        } else {
+            setWishlistIds(prev => prev.filter(id => id !== productId));
+        }
+        toast.error("Failed to update wishlist.");
     }
   }
 
-  // Add to Cart 
-  const AddtoCart = (event, productData) => {
+  // Add to Cart (Fixed Bug: Specific quantity parameter added so related products don't copy main product's quantity)
+  const AddtoCart = (event, productData, qty = 1) => {
     event.stopPropagation()
     dispatch({
       type: "addProduct",
-      // Merge the selected quantity into the product payload
-      payload: { ...productData, quantity: quantity } 
+      payload: { ...productData, quantity: qty } 
     })
+    toast.success(`${qty}x ${productData.productName} added to cart!`) // <-- Added Toast
   }
 
   // Trigger Fetch
@@ -245,16 +271,17 @@ export default function ProductPage() {
                   <span className="px-6 font-medium text-foreground text-base">{quantity}</span>
                   <button
                     aria-label="Increase quantity"
-                    onClick={() => setQuantity(Math.min(productDetails.stockQty, quantity + 1))}
+                    onClick={() => setQuantity(Math.min(productDetails.stockQty || 99, quantity + 1))}
                     className="p-2 hover:bg-gray-100 rounded-full text-text-muted transition-colors disabled:opacity-50"
-                    disabled={!productDetails.status || quantity >= productDetails.stockQty}
+                    disabled={!productDetails.status || quantity >= (productDetails.stockQty || 99)}
                   >
                     <Plus size={16} />
                   </button>
                 </div>
 
                 <button
-                  onClick={(event) => { AddtoCart(event, productDetails) }}
+                  // Fixed: Passing exact quantity state for main product
+                  onClick={(event) => { AddtoCart(event, productDetails, quantity) }}
                   disabled={!productDetails.status}
                   className="flex-1 w-full flex items-center justify-center gap-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-8 rounded-full shadow-md shadow-[#00b207]/10 transition-colors"
                 >
@@ -396,7 +423,8 @@ export default function ProductPage() {
                         </div>
                         <button
                           aria-label="Add to Cart"
-                          onClick={(event) => { AddtoCart(event, product) }}
+                          // Fixed: Hardcoded to 1 so it doesn't copy the main product's quantity
+                          onClick={(event) => { AddtoCart(event, product, 1) }}
                           className="w-8 h-8 flex items-center justify-center rounded-full text-text-muted hover:bg-green-500 hover:text-white transition-colors"
                         >
                           <ShoppingBag size={14} />

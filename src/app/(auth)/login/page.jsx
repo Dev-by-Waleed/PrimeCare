@@ -1,14 +1,26 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Lock, Leaf, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import supabase from '@/Config/Supabase';
+import toast from 'react-hot-toast';
 
 
 export default function LoginPage() {
   const router = useRouter();
+
+  // ADD THIS BLOCK:
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push('/'); // Redirect to home if already logged in
+      }
+    };
+    checkUser();
+  }, [router]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -46,6 +58,7 @@ export default function LoginPage() {
       if (signInError) throw signInError;
 
       // On successful login, redirect to home page or dashboard
+      toast.success('Successfully logged in!', { duration: 4000 });
       router.push('/');
       router.refresh(); // Optional: Refreshes the server components to update auth state
 
@@ -64,7 +77,7 @@ export default function LoginPage() {
     try {
       // Dynamically get current site URL so it works in both local development and production environments
       const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-      
+
       const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -220,8 +233,8 @@ export default function LoginPage() {
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-4">
-              <button 
-                onClick={signInWithGoogle} 
+              <button
+                onClick={signInWithGoogle}
                 disabled={isLoading}
                 className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-200 rounded-full bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
               >

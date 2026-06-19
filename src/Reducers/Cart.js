@@ -1,35 +1,34 @@
-function cartReducer(state, action) {
+import { produce } from "immer";
+
+// using immer to make the logic less complicated
+const cartReducer = produce((draft, action) => {
     switch (action.type) {
-        case "addProduct":
-            // Check if the item already exists in the cart
-            const existingItemIndex = state.findIndex(item => item.id === action.payload.id);
-            
-            // Extract the quantity being added, default to 1 just in case
+        case "addProduct": {
+            // draft is a safe, mutable proxy of your state
+            const existingItem = draft.find(item => item.id === action.payload.id);
             const quantityToAdd = action.payload.quantity || 1;
-            
-            if (existingItemIndex >= 0) {
-                // If it exists, copy the state and add the incoming quantity to the existing quantity
-                const newState = [...state];
-                newState[existingItemIndex] = {
-                    ...newState[existingItemIndex],
-                    quantity: (newState[existingItemIndex].quantity || 0) + quantityToAdd
-                };
-                return newState;
+
+            if (existingItem) {
+                // You can just reassign the value directly! Immer handles the rest.
+                existingItem.quantity = (existingItem.quantity || 0) + quantityToAdd;
             } else {
-                // If it's a new item, add it to the array with the requested quantity
-                return [...state, { ...action.payload, quantity: quantityToAdd }];
+                // You can even use standard .push()
+                draft.push({ ...action.payload, quantity: quantityToAdd });
             }
+            break; // Note: In Immer, you use 'break' instead of returning state
+        }
 
-        case "deleteProduct":
-            // Assuming action.payload is the whole product object
-            return state.filter(item => item.id !== action.payload.id); 
+        case "deleteProduct": {
+            // You can still return a totally new array if you prefer
+            return draft.filter(item => item.id !== action.payload.id);
+        }
 
-        case "deleteAllProduct":    
+        case "deleteAllProduct": {
             return [];
-
-        default:
-            return state;
+        }
+        
+        // No default case needed, Immer returns the draft state automatically
     }
-}
+});
 
 export default cartReducer;

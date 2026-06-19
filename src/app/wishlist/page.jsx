@@ -1,105 +1,112 @@
 "use client"
-import React, { useState, useEffect, useContext } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Trash2, ShoppingBag, ArrowLeft, HeartCrack, Loader2, UserCheck } from 'lucide-react';
-import { CartContext } from '@/Context/cart';
-import supabase from '@/Config/Supabase';
+import React, { useEffect, useState, useContext } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import supabase from '@/Config/Supabase'
+// I added the missing icons that your HTML was asking for (ShoppingBag, Trash2, etc.)
+import { HeartCrack, Loader2, UserCheck, ShoppingBag, Trash2, ArrowLeft } from 'lucide-react' 
+import { CartContext } from '@/Context/cart'
+import toast from 'react-hot-toast'
 
 export default function WishlistPage() {
+  // Matched exactly to what your HTML needs:
+  const [wishlistItems, setWishlistItems] = useState([])
+  const [user, setUser] = useState(null)
+  const [isLoading, setIsLoading] = useState(true) 
+  
   const { dispatch } = useContext(CartContext)
 
-  const [wishlistItems, setWishlistItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-
-  // 1. Fetch User and Wishlist Data
   useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        setLoading(true);
+    fetchWishlist()
 
-        // Check current authenticated user
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session?.user) {
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        setUser(session.user);
-
-        // Fetch wishlist items joined with their product details
-        const { data, error } = await supabase
-          .from('wishlist_items')
-          .select(`
-            id,
-            product_id,
-            products (
-              id,
-              productName,
-              price,
-              productImg,
-              stockQty
-            )
-          `)
-          .eq('user_id', session.user.id);
-
-        if (error) throw error;
-
-        setWishlistItems(data || []);
-      } catch (error) {
-        console.error('Error fetching wishlist:', error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWishlist();
-
-    // Listen for auth changes to update state instantly if they log out/in
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        setUser(null);
-        setWishlistItems([]);
+      if (session?.user) {
+        setUser(session.user)
+        fetchWishlist()
       } else {
-        setUser(session.user);
+        setUser(null)
+        setWishlistItems([])
       }
-    });
+    })
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => subscription.unsubscribe()
+  }, [])
 
-  // 2. Remove Item from Supabase Table
+  // 1. Fetch Wishlist Items (Joined with Products)
+  const fetchWishlist = async () => {
+    try {
+      setIsLoading(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        setUser(null)
+        setIsLoading(false)
+        return
+      }
+
+      setUser(session.user)
+      
+      // We fetch the wishlist items AND the product details at the same time
+      const { data, error } = await supabase
+        .from('wishlist_items')
+        .select(`
+          id,
+          product_id,
+          products (*)
+        `)
+        .eq('user_id', session.user.id)
+        
+      if (error) throw error;
+
+      if (data) {
+        setWishlistItems(data)
+      }
+    } catch (error) {
+      console.error("Error fetching wishlist:", error.message)
+      toast.error("Failed to load your wishlist.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 2. Handle Remove from Wishlist (Optimistic UI)
   const handleRemove = async (wishlistItemId) => {
+    const previousItems = [...wishlistItems]
+    
+    // Instantly remove from UI
+    setWishlistItems(prev => prev.filter(item => item.id !== wishlistItemId))
+
     try {
       const { error } = await supabase
         .from('wishlist_items')
         .delete()
-        .eq('id', wishlistItemId);
-
+        .eq('id', wishlistItemId)
+      
       if (error) throw error;
-
-      // Optimistically update frontend UI state
-      setWishlistItems(wishlistItems.filter(item => item.id !== wishlistItemId));
+      toast.success("Removed from wishlist")
     } catch (error) {
-      console.error('Error deleting item:', error.message);
-      alert('Failed to remove item. Please try again.');
+      // Revert if DB fails
+      setWishlistItems(previousItems)
+      toast.error("Failed to remove item.")
     }
-  };
+  }
 
-  // 3. Add Item to Shopping Cart
+  // 3. Add to Cart
   const addToCart = (event, productData) => {
     event.stopPropagation()
-    dispatch({
-      type: "addProduct",
-      payload: productData // Standardized to match the reducer's action.payload
-    })
+    try {
+      dispatch({
+        type: "addProduct",
+        payload: { ...productData, quantity: 1 } 
+      })
+      toast.success(`${productData.productName || 'Item'} added to cart!`)
+    } catch (error) {
+      toast.error("Failed to add item to cart.")
+    }
   }
 
   // ================= STATE 1: LOADING =================
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#f9f9f9] flex flex-col items-center justify-center gap-4">
         <Loader2 className="animate-spin text-[#00b207]" size={40} />
@@ -129,6 +136,7 @@ export default function WishlistPage() {
     );
   }
 
+  // ================= MAIN UI =================
   return (
     <div className="min-h-screen bg-[#f9f9f9] pb-20">
       {/* Header */}
@@ -196,9 +204,9 @@ export default function WishlistPage() {
                       <button
                         onClick={(e) => addToCart(e, product)}
                         disabled={!product.stockQty}
-                        className= {`flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-semibold transition-colors ${product.stockQty
-                            ? 'bg-[#00b207] text-white hover:bg-[#009906]'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-full font-semibold transition-colors ${product.stockQty
+                          ? 'bg-[#00b207] text-white hover:bg-[#009906]'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                           }`}
                       >
                         <ShoppingBag size={18} />

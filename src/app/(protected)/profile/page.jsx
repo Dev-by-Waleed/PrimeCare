@@ -2,41 +2,54 @@
 import React, { useEffect, useState } from 'react';
 import supabase from '@/Config/Supabase';
 import { User, Mail, Shield, Loader2 } from 'lucide-react';
-
+import toast from 'react-hot-toast';
 export default function ProfilePage() {
-  const [userData, setUserData] = useState(null);
-  const [userRole, setUserRole] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        // 1. Get the current logged-in user from the "Security Desk" (Auth)
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          setUserData(session.user);
+const [userData, setUserData] = useState(null);
+const [userRole, setUserRole] = useState(null);
+const [isLoading, setIsLoading] = useState(true);
 
-          // 2. Walk over to our new "profiles" table and check their role
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single();
+useEffect(() => {
+  const fetchProfile = async () => {
+    // 1. Show a loading toast
+    const loadingToast = toast.loading('Loading your profile...');
 
-          if (profile) {
-            setUserRole(profile.role);
-          }
+    try {
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      
+      if (authError) throw authError;
+      
+      if (session?.user) {
+        setUserData(session.user);
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        if (profile) {
+          setUserRole(profile.role);
+          // 2. Success toast with role info
+          toast.success(`Welcome back! Role: ${profile.role}`, { id: loadingToast });
         }
-      } catch (error) {
-        console.error("Error loading profile:", error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        // 3. Inform user if no active session found
+        toast('No active session. Please log in.', { id: loadingToast, icon: 'ℹ️' });
       }
-    };
+    } catch (error) {
+      console.error("Error loading profile:", error);
+      // 4. Error toast if something fails
+      toast.error('Failed to load profile data. Please try again.', { id: loadingToast });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchProfile();
-  }, []);
+  fetchProfile();
+}, []);
 
   // Show a spinner while we fetch the data
   if (isLoading) {
